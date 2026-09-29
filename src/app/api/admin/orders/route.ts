@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     from,
     to,
     search: url.searchParams.get("q")?.slice(0, 60) || undefined,
-    limit: Number(url.searchParams.get("limit") ?? 200) || 200,
+    limit: Math.min(1000, Math.max(1, Math.floor(Number(url.searchParams.get("limit") ?? 200) || 200))),
   });
   return NextResponse.json({ orders }, { headers: { "Cache-Control": "no-store" } });
 }

@@ -2,11 +2,17 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 
-/** Adresse IP du client (derrière Vercel ou un reverse proxy). */
+/**
+ * Adresse IP du client. Vercel (et la plupart des reverse proxies) fixent x-real-ip eux-mêmes ;
+ * x-forwarded-for sert de repli. Sans proxy, ces en-têtes sont déclaratifs : les limites
+ * par nom d'utilisateur et par commande restent alors la vraie protection.
+ */
 export function getClientIp(request: Request): string {
+  const realIp = request.headers.get("x-real-ip")?.trim();
+  if (realIp) return realIp;
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) return forwarded.split(",")[0]!.trim();
-  return request.headers.get("x-real-ip")?.trim() || "local";
+  return "local";
 }
 
 /** Empreinte anonymisée d'un identifiant (on ne stocke jamais l'IP en clair). */

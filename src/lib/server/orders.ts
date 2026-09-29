@@ -267,7 +267,7 @@ export async function listOrders(filter: OrderFilter = {}): Promise<Order[]> {
     params.push(`%${filter.search.replace(/[%_\\]/g, "")}%`);
     where.push(`(code ilike $${params.length} or customer_name ilike $${params.length} or customer_phone ilike $${params.length})`);
   }
-  params.push(Math.min(filter.limit ?? 200, 1000));
+  params.push(Math.min(1000, Math.max(1, Math.floor(filter.limit ?? 200))));
   const rows = await db.query<OrderRow>(
     `select ${ORDER_COLUMNS} from orders ${where.length ? `where ${where.join(" and ")}` : ""}
      order by created_at desc limit $${params.length}`,
