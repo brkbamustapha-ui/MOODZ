@@ -418,12 +418,15 @@ function GoldDust({ color, count = 70 }: { color: string; count?: number }) {
   );
 }
 
-/** Fait tourner lentement l'environnement : les reflets glissent sur le métal (sans recalcul coûteux). */
+/**
+ * Balance lentement l'environnement : les reflets glissent sur le métal (sans recalcul coûteux).
+ * Oscillation limitée pour que le panneau principal reste face aux lettres : elles restent dorées.
+ */
 function EnvironmentSweep({ animate }: { animate: boolean }) {
   useFrame((state) => {
     if (!animate) return;
     const t = state.clock.elapsedTime;
-    state.scene.environmentRotation.set(Math.sin(t * 0.21) * 0.25, t * 0.18, 0);
+    state.scene.environmentRotation.set(Math.sin(t * 0.21) * 0.2, Math.sin(t * 0.16) * 0.55, 0);
   });
   return null;
 }
