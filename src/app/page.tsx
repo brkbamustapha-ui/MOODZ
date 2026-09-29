@@ -3,13 +3,14 @@ import { SiteShell } from "@/components/site/SiteShell";
 import { getOpenStatus } from "@/lib/hours";
 import { getPublicMenu } from "@/lib/server/menu";
 import { getSettings, toPublicSettings } from "@/lib/server/settings";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const [menu, settings] = await Promise.all([getPublicMenu(), getSettings()]);
   const status = getOpenStatus(settings.hours);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  const siteUrl = getSiteUrl();
 
   // Données structurées : restaurant et carte (référencement Google)
   const jsonLd = {
@@ -19,7 +20,7 @@ export default async function Home() {
     description: settings.heroSubtitle,
     address: { "@type": "PostalAddress", streetAddress: settings.address, addressLocality: "Oran", addressCountry: "DZ" },
     telephone: settings.phone || undefined,
-    url: siteUrl || undefined,
+    url: siteUrl,
     servesCuisine: ["Café", "Brunch", "Burgers", "Pizzas", "Desserts"],
     priceRange: "DA",
     sameAs: [settings.instagram, settings.tiktok].filter(Boolean),
