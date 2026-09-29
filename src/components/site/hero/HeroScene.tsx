@@ -153,20 +153,25 @@ function Halo({ accent, animate }: { accent: string; animate: boolean }) {
   const b = useRef<THREE.Mesh>(null);
   const { viewport } = useThree();
   // Anneaux qui encadrent le logo (au-dessus et au-dessous) sans le traverser
-  const radius = Math.min(viewport.width * (viewport.aspect < 1 ? 0.5 : 0.4), 5.4);
+  const wide = viewport.aspect >= 1;
+  const radius = Math.min(viewport.width * (wide ? 0.4 : 0.5), 5.4);
+  // Sur grand écran : plus inclinés et un peu abaissés, l'arc supérieur reste sous la navigation
+  const tiltA = wide ? 1.3 : 1.18;
+  const tiltB = wide ? 1.38 : 1.3;
+  const offsetY = wide ? -radius * 0.05 : 0;
   useFrame((state) => {
     if (!animate) return;
     const t = state.clock.elapsedTime;
-    if (a.current) a.current.rotation.set(1.18 + Math.sin(t * 0.22) * 0.05, Math.sin(t * 0.17) * 0.06, t * 0.05);
-    if (b.current) b.current.rotation.set(1.3 + Math.cos(t * 0.18) * 0.05, -0.12 + Math.sin(t * 0.13) * 0.05, -t * 0.04);
+    if (a.current) a.current.rotation.set(tiltA + Math.sin(t * 0.22) * 0.04, Math.sin(t * 0.17) * 0.06, t * 0.05);
+    if (b.current) b.current.rotation.set(tiltB + Math.cos(t * 0.18) * 0.04, -0.12 + Math.sin(t * 0.13) * 0.05, -t * 0.04);
   });
   return (
-    <group position={[0, 0, -1.2]}>
-      <mesh ref={a} rotation={[1.18, 0, 0]}>
+    <group position={[0, offsetY, -1.2]}>
+      <mesh ref={a} rotation={[tiltA, 0, 0]}>
         <torusGeometry args={[radius, 0.009, 16, 260]} />
         <meshStandardMaterial color={accent} metalness={1} roughness={0.3} emissive={accent} emissiveIntensity={0.22} />
       </mesh>
-      <mesh ref={b} rotation={[1.3, -0.12, 0]}>
+      <mesh ref={b} rotation={[tiltB, -0.12, 0]}>
         <torusGeometry args={[radius * 1.12, 0.005, 12, 260]} />
         <meshStandardMaterial color={accent} metalness={1} roughness={0.4} emissive={accent} emissiveIntensity={0.14} transparent opacity={0.55} />
       </mesh>
