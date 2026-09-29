@@ -122,13 +122,17 @@ export function Switch({
   checked,
   onChange,
   label,
+  ariaLabel,
   description,
   disabled,
   size = "md",
 }: {
   checked: boolean;
   onChange: (value: boolean) => void;
+  /** Libellé visible à côté de l'interrupteur */
   label?: string;
+  /** Libellé pour lecteurs d'écran uniquement (quand le texte visible est ailleurs) */
+  ariaLabel?: string;
   description?: string;
   disabled?: boolean;
   size?: "sm" | "md";
@@ -141,7 +145,7 @@ export function Switch({
       type="button"
       role="switch"
       aria-checked={checked}
-      aria-label={label}
+      aria-label={ariaLabel ?? label}
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={`relative inline-flex shrink-0 items-center rounded-full p-[3px] transition-colors duration-300 disabled:opacity-50 ${track} ${

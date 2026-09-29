@@ -2,7 +2,6 @@
 
 import { EyeIcon, EyeSlashIcon, LockKeyIcon, UserIcon } from "@phosphor-icons/react";
 import { motion } from "motion/react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AnimatedLogo } from "@/components/brand/AnimatedLogo";
 import { LiquidGold } from "@/components/site/LiquidGold";
@@ -11,7 +10,6 @@ import { api } from "@/lib/admin-api";
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 export function LoginForm({ next, isDev }: { next: string; isDev: boolean }) {
-  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
@@ -28,8 +26,8 @@ export function LoginForm({ next, isDev }: { next: string; isDev: boolean }) {
     setError(null);
     try {
       await api("/api/admin/login", { method: "POST", json: { username, password } });
-      router.replace(next);
-      router.refresh();
+      // Navigation complète : le tableau de bord se charge avec la nouvelle session, sans cache client
+      window.location.assign(new URL(next, window.location.origin).href);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Connexion impossible.");
       setLoading(false);

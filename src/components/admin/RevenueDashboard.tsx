@@ -326,29 +326,34 @@ export function RevenueDashboard({ finance }: { finance: SiteSettings["finance"]
           </Panel>
 
           <div className="grid gap-6 xl:grid-cols-2">
-            <Panel>
-              <PanelTitle sub={peak && peak.orders > 0 ? `Pic d'activité vers ${peak.hour} h` : "Nombre de commandes par heure"}>Heures de pointe</PanelTitle>
-              <ColumnChart data={hourData} format={(n) => `${formatNumber(n)} commande(s)`} emphasis="max" ariaLabel="Commandes par heure" showTickEvery={3} height={200} />
-            </Panel>
-            <Panel>
-              <PanelTitle sub="Part du chiffre d'affaires">Mode de commande</PanelTitle>
-              <StackedShare
-                format={formatDA}
-                parts={(["pickup", "delivery", "dine_in"] as OrderType[]).map((type, i) => ({
-                  key: type,
-                  label: ORDER_TYPE_LABELS[type],
-                  value: stats.byType.find((t) => t.type === type)?.revenue ?? 0,
-                  color: SERIES[i],
-                }))}
-              />
-              <div className="mt-6 border-t border-line pt-5">
-                <p className="mb-4 text-[13px] text-text-3">Par catégorie</p>
-                <BarList
-                  rows={stats.byCategory.slice(0, 8).map((c) => ({ key: c.category, label: c.category, value: c.revenue }))}
+            <div className="flex flex-col gap-6">
+              <Panel>
+                <PanelTitle sub={peak && peak.orders > 0 ? `Pic d'activité vers ${peak.hour} h` : "Nombre de commandes par heure"}>
+                  Heures de pointe
+                </PanelTitle>
+                <ColumnChart data={hourData} format={(n) => `${formatNumber(n)} commande(s)`} emphasis="max" ariaLabel="Commandes par heure" showTickEvery={3} height={200} />
+              </Panel>
+              <Panel>
+                <PanelTitle sub="Part du chiffre d'affaires">Mode de commande</PanelTitle>
+                <StackedShare
                   format={formatDA}
-                  empty={<p className="text-[13px] text-text-3">Aucune vente sur la période.</p>}
+                  parts={(["pickup", "delivery", "dine_in"] as OrderType[]).map((type, i) => ({
+                    key: type,
+                    label: ORDER_TYPE_LABELS[type],
+                    value: stats.byType.find((t) => t.type === type)?.revenue ?? 0,
+                    color: SERIES[i],
+                  }))}
                 />
-              </div>
+              </Panel>
+            </div>
+            <Panel>
+              <PanelTitle sub="Chiffre d'affaires par catégorie de la carte">Par catégorie</PanelTitle>
+              <BarList
+                rows={stats.byCategory.slice(0, 12).map((c) => ({ key: c.category, label: c.category, value: c.revenue, note: `· ${c.quantity}` }))}
+                format={formatDA}
+                empty={<p className="text-[13px] text-text-3">Aucune vente sur la période.</p>}
+              />
+              {stats.byCategory.length > 0 && <p className="mt-5 text-[12px] text-text-3">Le chiffre après le montant indique le nombre d&apos;articles vendus.</p>}
             </Panel>
           </div>
 

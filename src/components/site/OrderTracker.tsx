@@ -15,7 +15,7 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { LogoMark } from "@/components/brand/LogoMark";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { formatDA, formatTime } from "@/lib/format";
 import { ORDER_TYPE_LABELS, type OrderStatus, type OrderType, type PublicSettings } from "@/lib/site-config";
 import type { PublicOrder } from "@/lib/types";
@@ -102,7 +102,7 @@ export function OrderTracker({ initial, settings }: { initial: PublicOrder; sett
           <ArrowLeftIcon size={16} weight="light" /> La carte
         </Link>
         <Link href="/" aria-label="Accueil MOODZ">
-          <LogoMark className="h-5 w-auto" />
+          <BrandLogo src={settings.logoDataUrl} alt={settings.restaurantName} className="h-5 w-auto" imageClassName="h-10 w-auto object-contain" />
         </Link>
       </div>
 

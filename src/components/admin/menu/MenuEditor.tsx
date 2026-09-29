@@ -95,10 +95,17 @@ function ItemRow({
         </p>
       </div>
       <div className="flex items-center justify-between gap-2 sm:justify-end">
-        <label className="flex items-center gap-2 text-[12px] text-text-3">
-          <Switch size="sm" checked={item.isAvailable} onChange={() => actions.onToggle(item, "isAvailable")} label={item.isAvailable ? "Disponible" : "Épuisé"} />
-          <span className={`w-16 ${item.isAvailable ? "text-success" : "text-danger"}`}>{item.isAvailable ? "Disponible" : "Épuisé"}</span>
-        </label>
+        <div className="flex items-center gap-2 text-[12px] text-text-3">
+          <Switch
+            size="sm"
+            checked={item.isAvailable}
+            onChange={() => actions.onToggle(item, "isAvailable")}
+            ariaLabel={`${item.name} : ${item.isAvailable ? "disponible" : "épuisé"}`}
+          />
+          <span className={`w-16 ${item.isAvailable ? "text-success" : "text-danger"}`} aria-hidden>
+            {item.isAvailable ? "Disponible" : "Épuisé"}
+          </span>
+        </div>
         <div className="flex items-center">
           {index !== undefined && (
             <>
@@ -421,7 +428,7 @@ export function MenuEditor({ initialMenu, isSample }: { initialMenu: Category[];
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <Switch size="sm" label="Visible" checked={selected.isVisible} onChange={() => toggleCategory(selected)} />
+                    <Switch size="sm" ariaLabel="Catégorie visible sur le site" checked={selected.isVisible} onChange={() => toggleCategory(selected)} />
                     <span className="mr-2 text-[12px] text-text-3">{selected.isVisible ? "Visible" : "Masquée"}</span>
                     <IconButton label="Modifier la catégorie" onClick={() => setCategoryModal({ open: true, category: selected })}>
                       <PencilSimpleIcon size={16} weight="light" />

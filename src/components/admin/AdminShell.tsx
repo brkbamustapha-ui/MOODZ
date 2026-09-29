@@ -14,7 +14,7 @@ import {
 } from "@phosphor-icons/react";
 import { MotionConfig, motion } from "motion/react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { LogoMark } from "@/components/brand/LogoMark";
 import { api } from "@/lib/admin-api";
@@ -35,13 +35,11 @@ function isActive(pathname: string, href: string) {
 
 function Sidebar({ username }: { username: string }) {
   const pathname = usePathname();
-  const router = useRouter();
   const { pending, soundOn, setSoundOn } = usePulse();
 
   const logout = async () => {
     await api("/api/admin/logout", { method: "POST" }).catch(() => null);
-    router.replace("/admin/login");
-    router.refresh();
+    window.location.assign(new URL("/admin/login", window.location.origin).href);
   };
 
   return (

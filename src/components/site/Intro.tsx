@@ -12,11 +12,50 @@ export function useIntroDone() {
   return useSyncExternalStore(introStore.subscribe, introStore.getSnapshot, introStore.getServerSnapshot) === "done";
 }
 
+/** Logo importé par le gérant : apparition floue vers nette, puis reflet lumineux. */
+function UploadedLogoReveal({ url, tagline }: { url: string; tagline: string }) {
+  const mask = { WebkitMaskImage: `url("${url}")`, maskImage: `url("${url}")` };
+  return (
+    <div className="flex flex-col items-center">
+      <motion.div
+        className="relative w-[min(58vw,340px)]"
+        initial={{ opacity: 0, scale: 0.9, filter: "blur(14px)" }}
+        animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+        transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={url} alt="" className="block w-full" />
+        <motion.div
+          aria-hidden
+          className="absolute inset-0 [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain]"
+          style={{
+            ...mask,
+            background: "linear-gradient(100deg, transparent 35%, rgb(255 250 235 / 0.85) 50%, transparent 65%)",
+            backgroundSize: "250% 100%",
+          }}
+          initial={{ backgroundPosition: "140% 0" }}
+          animate={{ backgroundPosition: "-40% 0" }}
+          transition={{ delay: 1.3, duration: 1.3, ease: [0.45, 0, 0.2, 1] }}
+          onAnimationComplete={() => window.setTimeout(introStore.finish, 300)}
+        />
+      </motion.div>
+      <motion.p
+        className="mt-6 text-[12px] uppercase tracking-[0.42em] text-gold-200"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.1, duration: 0.9 }}
+      >
+        {tagline}
+      </motion.p>
+    </div>
+  );
+}
+
 /**
  * Rideau d'ouverture : le logo se dessine puis le rideau se lève sur le site.
  * Joué une fois par session, passable d'un clic ou d'une touche.
  */
-export function Intro({ tagline }: { tagline: string }) {
+export function Intro({ tagline, logoUrl }: { tagline: string; logoUrl?: string | null }) {
   const done = useIntroDone();
 
   useEffect(() => {
@@ -48,12 +87,16 @@ export function Intro({ tagline }: { tagline: string }) {
             aria-hidden
             className="pointer-events-none absolute left-1/2 top-1/2 h-[50vmin] w-[90vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--accent)_16%,transparent),transparent)] blur-2xl"
           />
-          <AnimatedLogo
-            className="w-[min(72vw,560px)] text-[clamp(11px,1.6vw,15px)]"
-            tagline={tagline}
-            delay={0.15}
-            onDone={() => window.setTimeout(introStore.finish, 250)}
-          />
+          {logoUrl ? (
+            <UploadedLogoReveal url={logoUrl} tagline={tagline} />
+          ) : (
+            <AnimatedLogo
+              className="w-[min(72vw,560px)] text-[clamp(11px,1.6vw,15px)]"
+              tagline={tagline}
+              delay={0.15}
+              onDone={() => window.setTimeout(introStore.finish, 250)}
+            />
+          )}
           <span className="absolute bottom-8 text-[11px] uppercase tracking-[0.3em] text-text-3">Toucher pour entrer</span>
         </motion.div>
       )}

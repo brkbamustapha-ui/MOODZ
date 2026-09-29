@@ -3,7 +3,7 @@
 import { InstagramLogoIcon, ShoppingBagOpenIcon, TiktokLogoIcon } from "@phosphor-icons/react";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 import { useEffect, useState } from "react";
-import { LogoMark } from "@/components/brand/LogoMark";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import type { PublicSettings } from "@/lib/site-config";
 import { useCart } from "./cart/CartContext";
 import { scrollToId, setScrollLocked } from "./SmoothScroll";
@@ -68,7 +68,7 @@ export function Nav({ settings }: { settings: PublicSettings }) {
             className="flex items-center"
             aria-label={`${settings.restaurantName}, retour en haut`}
           >
-            <LogoMark className="h-[15px] w-auto sm:h-[17px]" />
+            <BrandLogo src={settings.logoDataUrl} alt={settings.restaurantName} className="h-[15px] w-auto sm:h-[17px]" imageClassName="h-9 w-auto object-contain" />
           </a>
 
           <ul className="hidden items-center gap-1 lg:flex">

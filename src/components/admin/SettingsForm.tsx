@@ -166,16 +166,28 @@ export function SettingsForm({ initial, username }: { initial: SiteSettings; use
             {DAY_KEYS.map((day) => {
               const h = settings.hours[day];
               return (
-                <li key={day} className="grid grid-cols-[6.5rem_auto_1fr] items-center gap-3 rounded-2xl px-3 py-2 ring-1 ring-line">
-                  <span className="text-[14px] text-text">{DAY_LABELS[day]}</span>
-                  <Switch size="sm" label={`${DAY_LABELS[day]} ouvert`} checked={!h.closed} onChange={(open) => setDay(day, { closed: !open })} />
+                <li key={day} className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl px-3 py-2 ring-1 ring-line">
+                  <span className="w-[5.5rem] text-[14px] text-text">{DAY_LABELS[day]}</span>
+                  <Switch size="sm" ariaLabel={`${DAY_LABELS[day]} : ouvert`} checked={!h.closed} onChange={(open) => setDay(day, { closed: !open })} />
                   {h.closed ? (
                     <span className="text-[13px] text-text-3">Fermé</span>
                   ) : (
-                    <span className="flex items-center gap-2">
-                      <input type="time" className={`${inputClass} py-1.5`} value={h.open} onChange={(e) => setDay(day, { open: e.target.value })} aria-label={`Ouverture ${DAY_LABELS[day]}`} />
+                    <span className="ml-auto flex items-center gap-2">
+                      <input
+                        type="time"
+                        className={`${inputClass} tabular w-[7.25rem] px-2.5 py-1.5`}
+                        value={h.open}
+                        onChange={(e) => setDay(day, { open: e.target.value })}
+                        aria-label={`Ouverture ${DAY_LABELS[day]}`}
+                      />
                       <span className="text-text-3">à</span>
-                      <input type="time" className={`${inputClass} py-1.5`} value={h.close} onChange={(e) => setDay(day, { close: e.target.value })} aria-label={`Fermeture ${DAY_LABELS[day]}`} />
+                      <input
+                        type="time"
+                        className={`${inputClass} tabular w-[7.25rem] px-2.5 py-1.5`}
+                        value={h.close}
+                        onChange={(e) => setDay(day, { close: e.target.value })}
+                        aria-label={`Fermeture ${DAY_LABELS[day]}`}
+                      />
                     </span>
                   )}
                 </li>

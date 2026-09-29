@@ -57,26 +57,46 @@ const variantSchema = z.object({
 
 const tagSchema = z.enum(Object.keys(ITEM_TAGS) as [keyof typeof ITEM_TAGS, ...(keyof typeof ITEM_TAGS)[]]);
 
-export const itemInputSchema = z.object({
+// Champs sans valeurs par défaut : avec Zod 4, `.partial()` appliquerait sinon les défauts
+// aux clés absentes, et une mise à jour partielle écraserait des données existantes.
+const itemFields = {
   categoryId: z.number().int().positive(),
   name: cleanText(80).pipe(z.string().min(1, "Nom requis")),
-  description: cleanText(280).default(""),
+  description: cleanText(280),
   price: z.number().int().min(0).max(1_000_000),
-  cost: z.number().int().min(0).max(1_000_000).nullable().default(null),
-  variants: z.array(variantSchema).max(8).default([]),
-  tags: z.array(tagSchema).max(5).default([]),
-  isAvailable: z.boolean().default(true),
-  isVisible: z.boolean().default(true),
+  cost: z.number().int().min(0).max(1_000_000).nullable(),
+  variants: z.array(variantSchema).max(8),
+  tags: z.array(tagSchema).max(5),
+  isAvailable: z.boolean(),
+  isVisible: z.boolean(),
+};
+
+export const itemInputSchema = z.object({
+  ...itemFields,
+  description: itemFields.description.default(""),
+  cost: itemFields.cost.default(null),
+  variants: itemFields.variants.default([]),
+  tags: itemFields.tags.default([]),
+  isAvailable: itemFields.isAvailable.default(true),
+  isVisible: itemFields.isVisible.default(true),
 });
-export const itemPatchSchema = itemInputSchema.partial();
+/** Mise à jour partielle : seules les clés envoyées sont modifiées. */
+export const itemPatchSchema = z.object(itemFields).partial();
+
+const categoryFields = {
+  name: cleanText(60).pipe(z.string().min(1, "Nom requis")),
+  description: cleanText(200),
+  icon: z.enum(CATEGORY_ICONS),
+  isVisible: z.boolean(),
+};
 
 export const categoryInputSchema = z.object({
-  name: cleanText(60).pipe(z.string().min(1, "Nom requis")),
-  description: cleanText(200).default(""),
-  icon: z.enum(CATEGORY_ICONS).default("fork-knife"),
-  isVisible: z.boolean().default(true),
+  ...categoryFields,
+  description: categoryFields.description.default(""),
+  icon: categoryFields.icon.default("fork-knife"),
+  isVisible: categoryFields.isVisible.default(true),
 });
-export const categoryPatchSchema = categoryInputSchema.partial();
+export const categoryPatchSchema = z.object(categoryFields).partial();
 
 export const reorderSchema = z.object({
   ids: z.array(z.number().int().positive()).max(500),

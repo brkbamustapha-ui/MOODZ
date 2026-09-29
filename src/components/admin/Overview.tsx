@@ -98,7 +98,7 @@ export function Overview({
   const trendData = trend.byDay.map((d) => ({
     key: d.day,
     label: formatDay(`${d.day}T12:00:00Z`, { weekday: "long", day: "numeric", month: "short" }),
-    tickLabel: formatDay(`${d.day}T12:00:00Z`, { day: "numeric" }),
+    tickLabel: formatDay(`${d.day}T12:00:00Z`, { day: "numeric", month: undefined }),
     value: d.revenue,
   }));
   const trendTotal = trend.summary.revenue;
@@ -122,7 +122,7 @@ export function Overview({
           <span className="h-4 w-px bg-line-strong" />
           <span className="flex items-center gap-3 text-[13px] text-text-2">
             Commandes en ligne
-            <Switch size="sm" label="Commandes en ligne" checked={enabled} onChange={toggleOrdering} />
+            <Switch size="sm" ariaLabel="Commandes en ligne" checked={enabled} onChange={toggleOrdering} />
             <span className={enabled ? "text-success" : "text-warning"}>{enabled ? "Actives" : "Suspendues"}</span>
           </span>
         </div>

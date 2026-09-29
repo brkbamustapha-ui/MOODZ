@@ -75,7 +75,12 @@ export function Hero({ settings, status, play }: { settings: PublicSettings; sta
       <motion.div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-[78%] sm:h-[82%]" style={{ scale: reduce ? 1 : sceneScale }}>
         {webgl === false && (
           <div className="flex h-full items-center justify-center px-8">
-            <LogoMark className="w-[min(78vw,720px)]" />
+            {settings.logoDataUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={settings.logoDataUrl} alt="" className="max-h-[50%] w-[min(60vw,420px)] object-contain" />
+            ) : (
+              <LogoMark className="w-[min(78vw,720px)]" />
+            )}
           </div>
         )}
         {webgl && (
@@ -85,7 +90,7 @@ export function Hero({ settings, status, play }: { settings: PublicSettings; sta
             animate={{ opacity: play ? 1 : 0 }}
             transition={{ duration: 1.6, ease: EASE }}
           >
-            <HeroScene accent={settings.theme.accent} active={active} reduceMotion={reduce} />
+            <HeroScene accent={settings.theme.accent} active={active} reduceMotion={reduce} logoUrl={settings.logoDataUrl} />
           </motion.div>
         )}
       </motion.div>

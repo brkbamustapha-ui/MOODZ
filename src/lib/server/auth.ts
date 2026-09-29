@@ -2,7 +2,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { jwtVerify, SignJWT } from "jose";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getDb } from "../db";
 
 export const SESSION_COOKIE = "moodz_admin";
@@ -71,11 +71,21 @@ export async function createSessionCookie(admin: Pick<AdminRow, "id" | "username
   const store = await cookies();
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: await isHttps(),
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_DAYS * 24 * 3600,
   });
+}
+
+/**
+ * Cookie « Secure » uniquement en HTTPS : sinon, un test en HTTP sur le réseau local
+ * (ex. http://192.168.1.10:3000) empêcherait silencieusement la connexion.
+ */
+async function isHttps(): Promise<boolean> {
+  const proto = (await headers()).get("x-forwarded-proto")?.split(",")[0]?.trim();
+  if (proto) return proto === "https";
+  return process.env.NODE_ENV === "production";
 }
 
 export async function clearSessionCookie() {

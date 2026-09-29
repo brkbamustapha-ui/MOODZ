@@ -33,7 +33,7 @@ export function SiteShell({ menu, settings, status }: Props) {
     <MotionConfig reducedMotion="user">
       <CartProvider menu={menu}>
         <SmoothScroll />
-        <Intro tagline={settings.tagline} />
+        <Intro tagline={settings.tagline} logoUrl={settings.logoDataUrl} />
         <Nav settings={settings} />
         <main className="w-full max-w-full overflow-x-clip">
           <Hero settings={settings} status={status} play={play} />

@@ -2,6 +2,7 @@
 
 import { InstagramLogoIcon, TiktokLogoIcon } from "@phosphor-icons/react";
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { LogoMark } from "@/components/brand/LogoMark";
 import type { PublicSettings } from "@/lib/site-config";
 import { scrollToId } from "./SmoothScroll";
@@ -13,7 +14,7 @@ export function Footer({ settings }: { settings: PublicSettings }) {
       <div className="hairline-gold mx-auto max-w-[1200px]" />
       <div className="mx-auto mt-16 grid max-w-[1200px] gap-12 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
-          <LogoMark className="h-7 w-auto" />
+          <BrandLogo src={settings.logoDataUrl} alt={settings.restaurantName} className="h-7 w-auto" imageClassName="h-14 w-auto object-contain" />
           <p className="mt-5 max-w-[34ch] text-[14px] leading-relaxed text-text-3">
             {settings.tagline}. {settings.address}.
           </p>
