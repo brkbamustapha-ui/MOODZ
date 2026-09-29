@@ -1,36 +1,175 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MOODZ · Café · Restaurant (Gambetta, Oran)
 
-## Getting Started
+Site officiel de MOODZ : logo 3D animé, carte en ligne sans photos, commande depuis le site avec
+confirmation manuelle par le restaurant, et espace gérant pour modifier la carte, suivre les commandes
+et calculer les revenus.
 
-First, run the development server:
+- **Site public** : `/`
+- **Suivi d'une commande** : `/commande/<code>` (lien donné au client après sa commande)
+- **Espace gérant** : `/admin`
+
+---
+
+## Ce que fait le site
+
+### Côté clients
+
+- **Intro et logo 3D** : le logotype MOODZ se dessine puis se dore ; sur la page d'accueil il devient
+  un objet 3D en or (reflets, particules). Sans WebGL, un logo doré en 2D prend le relais ; avec
+  l'option « réduire les animations » du téléphone, la scène reste immobile.
+- **Carte 3D fluide, sans photos** : catégories en carrousel 3D, articles présentés comme sur une carte
+  de restaurant (nom, description, prix, options de taille), badges *Signature*, *Nouveau*,
+  *Populaire*, *Épicé*, *Végétarien*. Les articles en rupture restent visibles mais ne peuvent pas être
+  commandés.
+- **Commande en ligne** : panier, choix *à emporter*, *livraison* ou *sur place*, frais et minimum de
+  livraison, message pour la cuisine. Les prix sont toujours recalculés côté serveur.
+- **Confirmation manuelle** : le client reçoit un code et une page de suivi qui se met à jour seule
+  (en attente, confirmée avec heure prévue, en préparation, prête, ou refusée avec le motif).
+- **Horaires, adresse, téléphone, WhatsApp, Instagram, TikTok**, avec l'état « ouvert / fermé »
+  calculé à l'heure d'Oran.
+
+### Côté gérant (`/admin`)
+
+| Page | Contenu |
+| --- | --- |
+| **Aperçu** | Commandes en attente, chiffre d'affaires du jour, tendance sur 14 jours, meilleures ventes, interrupteur pour suspendre les commandes en ligne. |
+| **Commandes** | Nouvelles commandes avec son et notification. Confirmer (avec délai), refuser (avec motif), passer en préparation, prête, terminée. Appel du client en un clic, impression du ticket, historique et recherche. |
+| **Carte** | Catégories et articles : ajouter, modifier, réordonner, masquer, mettre en rupture, options de taille, badges, prix de revient. **Import rapide** pour coller une carte entière. |
+| **Revenus** | Calculateur : chiffre d'affaires par jour, panier moyen, heures de pointe, ventes par catégorie et par article, marge brute, charges fixes, bénéfice estimé, projection mensuelle et seuil de rentabilité. Export CSV pour Excel. |
+| **Réglages** | Nom, textes, contact et réseaux, horaires, règles de commande (frais, minimum, délai), couleur d'accent, votre logo, identifiant et mot de passe. |
+
+Seules les commandes **acceptées** (confirmée, en préparation, prête, terminée) comptent dans le
+chiffre d'affaires. Les commandes refusées ou annulées sont exclues.
+
+---
+
+## Démarrer en local
+
+Prérequis : Node.js 20.9 ou plus récent.
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrez http://localhost:3000. Sans `DATABASE_URL`, une base PostgreSQL embarquée (PGlite) est créée
+dans `.data/` avec une carte d'exemple.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Espace gérant : http://localhost:3000/admin, compte de développement **admin / moodz2026**
+(créé seulement en local ; changez-le dans *Réglages > Compte*).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Pour tester sur un téléphone connecté au même Wi-Fi, ouvrez l'adresse « Network » affichée dans le
+terminal (ex. `http://192.168.1.10:3000`).
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Mise en ligne (Vercel + Supabase)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Le site a besoin d'une base PostgreSQL hébergée. Supabase (offre gratuite) convient très bien.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Créer la base** sur [supabase.com](https://supabase.com) : nouveau projet, région
+   **West EU (Paris)**, la plus proche d'Oran. Notez le mot de passe de la base.
+2. **Copier l'adresse de connexion** : bouton **Connect** du projet, mode **Transaction pooler**
+   (port `6543`). Remplacez `[YOUR-PASSWORD]` par le mot de passe de l'étape 1.
+3. **Importer le dépôt GitHub** sur [vercel.com](https://vercel.com) (*Add New > Project*).
+   Next.js est détecté automatiquement. `vercel.json` place les fonctions à Paris (`cdg1`), à côté
+   de la base.
+4. **Variables d'environnement** (voir `.env.example`) :
 
-## Deploy on Vercel
+   | Variable | Valeur |
+   | --- | --- |
+   | `DATABASE_URL` | l'adresse de l'étape 2 (obligatoire) |
+   | `ADMIN_USERNAME` | votre identifiant gérant, ex. `moodz` |
+   | `ADMIN_PASSWORD` | un mot de passe long et unique (obligatoire) |
+   | `AUTH_SECRET` | une clé aléatoire de 32 caractères ou plus : `openssl rand -base64 48` |
+   | `NEXT_PUBLIC_SITE_URL` | facultatif : votre domaine, ex. `https://moodz-oran.com` |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+5. **Déployer.** Au premier démarrage, le site crée les tables, la carte d'exemple et le compte
+   gérant. Connectez-vous sur `/admin`.
+6. **Nom de domaine** (facultatif) : *Settings > Domains* dans Vercel.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Les tables peuvent aussi être créées à l'avance avec `supabase/migrations/20260929000000_moodz_init.sql`
+(éditeur SQL de Supabase ou `supabase db push`), mais ce n'est pas nécessaire.
+
+> Hébergement ailleurs (VPS, serveur local) : `npm run build && npm start`. Sans `DATABASE_URL`, la base
+> embarquée est stockée dans `.data/pglite` (dossier modifiable avec `PGLITE_DIR`), pensez à la
+> sauvegarder. En production, `ADMIN_PASSWORD` est obligatoire.
+
+### Mot de passe oublié
+
+Les variables `ADMIN_*` ne servent qu'à créer le premier compte. Pour le recréer, exécutez
+`delete from admins;` dans l'éditeur SQL de Supabase, puis redéployez : le compte est recréé à partir
+de `ADMIN_USERNAME` et `ADMIN_PASSWORD`.
+
+---
+
+## Premiers réglages
+
+1. **Remplacer la carte d'exemple** : *Carte > Import rapide*, collez votre carte sous cette forme,
+   puis choisissez « Remplacer toute la carte ».
+
+   ```text
+   # Cafés
+   Espresso - 150
+   Cappuccino - 300 | Double shot, mousse de lait
+   # Pizzas
+   Margherita - Moyenne 800 / Large 1150 | Tomate, mozzarella, basilic
+   ```
+
+   Titres de catégorie : ligne commençant par `#`, en MAJUSCULES, ou finissant par `:`.
+   Descriptions après `|`. Les prix peuvent s'écrire `1 400`, `1400 DA` ou `1400`.
+2. **Votre logo** : *Réglages > Apparence* (PNG, SVG ou WebP transparent, 500 Ko maximum). Il remplace
+   le logotype dans la navigation et devient un médaillon 3D sur l'accueil.
+3. **Contact et horaires** : téléphone, WhatsApp, lien Google Maps, horaires par jour.
+4. **Commandes** : frais de livraison, livraison offerte dès, minimum, délai habituel, modes acceptés,
+   commandes hors horaires.
+5. **Marges** : renseignez le *prix de revient* des articles (facultatif) et, dans *Revenus*, le
+   pourcentage de coût matières par défaut et vos charges fixes (loyer, salaires, électricité...).
+
+Gardez la page **Commandes** ouverte pendant le service (sur une tablette par exemple) : un son et une
+notification signalent chaque nouvelle commande.
+
+---
+
+## Sécurité
+
+- Mots de passe hachés (bcrypt), session signée dans un cookie `httpOnly`, déconnexion de tous les
+  appareils après un changement de mot de passe.
+- Limites anti-abus : 10 essais de connexion par 15 min et par adresse IP, 6 commandes par 15 min
+  et par client, champ piège contre les robots.
+- Protection CSRF (vérification de l'origine), en-têtes de sécurité, espace gérant exclu des moteurs
+  de recherche.
+- Toutes les données passent par le serveur. Sur Supabase, la sécurité par ligne (RLS) est activée
+  sans règle publique : les tables sont inaccessibles via l'API publique de Supabase.
+- Les adresses IP ne sont jamais stockées en clair (empreinte anonymisée pour les limites).
+
+---
+
+## Pour les développeurs
+
+Next.js 16 (App Router, Turbopack), React 19, Tailwind CSS 4, Three.js + React Three Fiber,
+Motion, Lenis, Zod, PostgreSQL (`postgres`) ou PGlite.
+
+```text
+src/
+  app/                  pages, routes API (api/…) et espace gérant (admin/…)
+  components/site/      site public : hero 3D, carte, panier, suivi
+  components/admin/     tableau de bord : commandes, carte, revenus, réglages
+  components/brand/     logo animé et logotype
+  lib/db/               connexion, migrations SQL, données d'exemple
+  lib/server/           logique serveur : auth, commandes, carte, statistiques
+  proxy.ts              protection des routes /admin (ex-middleware)
+scripts/
+  generate-logo.mjs     régénère les tracés du logotype (police Cinzel)
+  export-sql.ts         exporte les migrations vers supabase/migrations
+```
+
+| Commande | Rôle |
+| --- | --- |
+| `npm run dev` | serveur de développement |
+| `npm run build` puis `npm start` | version de production |
+| `npm run lint` / `npx tsc --noEmit` | vérifications |
+| `npx tsx scripts/export-sql.ts` | après une nouvelle migration dans `src/lib/db/migrations.ts` |
+| `node scripts/generate-logo.mjs` | après un changement de police ou de lettrage du logo |
+
+Le logotype est tracé à partir de la police Cinzel (SIL Open Font License 1.1).
