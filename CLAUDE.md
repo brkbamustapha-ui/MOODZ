@@ -30,6 +30,16 @@ Textes de l'interface et commentaires du code en français.
 - Montants en dinars entiers. Le total d'une commande est toujours recalculé côté serveur.
 - Heures et statistiques en `Africa/Algiers` (`src/lib/hours.ts`, `src/lib/format.ts`).
 
+## Production
+
+- Vercel : projet `moodz` (équipe brkbamustapha-uis-projects), domaine https://moodz-five.vercel.app,
+  fonctions en `iad1`. La branche de production est `claude/optimistic-cray-80lesh` : chaque push
+  sur cette branche est mis en ligne. Valider (tsc, lint, build) avant de pousser.
+- Base : projet Supabase `supabase-chestnut-desert` (us-east-1), partagé avec le site
+  `imtiyaz-el-djazair` (tables Prisma dans `public`). MOODZ vit dans le schéma `moodz` avec le rôle
+  `moodz_app` (droits limités à ce schéma), via `DATABASE_URL` (pooler, port 6543) et
+  `DATABASE_SCHEMA=moodz`. Ne jamais modifier le schéma `public` de ce projet.
+
 ## Pièges connus
 
 - Zod 4 : `.partial()` applique les `.default()`. Les schémas de modification (`*PatchSchema` dans

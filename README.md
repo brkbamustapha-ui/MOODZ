@@ -104,6 +104,22 @@ directement de Supabase à Vercel : personne n'a à les copier.
    | `AUTH_SECRET` | facultatif : clé aléatoire de 32 caractères ou plus (`openssl rand -base64 48`) |
    | `NEXT_PUBLIC_SITE_URL` | facultatif : votre domaine, ex. `https://moodz-oran.com` |
 
+### C. Base partagée avec un rôle dédié (configuration en ligne actuelle)
+
+Pour isoler complètement MOODZ dans une base qui sert aussi un autre site, créez dans l'éditeur SQL de
+Supabase un rôle qui n'a de droits que sur son schéma :
+
+```sql
+create role moodz_app with login password 'un-mot-de-passe-long-et-aleatoire';
+create schema if not exists moodz;
+grant usage, create on schema moodz to moodz_app;
+alter role moodz_app set search_path = moodz;
+```
+
+Puis, dans Vercel : `DATABASE_SCHEMA=moodz` et `DATABASE_URL` = l'adresse du *Transaction pooler*
+(bouton **Connect** de Supabase) en remplaçant l'utilisateur par `moodz_app.<référence-du-projet>` et
+le mot de passe par celui du rôle.
+
 ### Région et nom de domaine
 
 `vercel.json` place les fonctions du site à Washington (`iad1`), à côté des bases Supabase de la région
