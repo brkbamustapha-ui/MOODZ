@@ -52,8 +52,9 @@ function RingCard({
   // Angle de la carte par rapport à l'avant de la scène : 0 = face au visiteur
   const facing = useTransform(rotation, (r) => Math.cos((wrap(base + r) * Math.PI) / 180));
   const opacity = useTransform(facing, [-0.2, 0.35, 1], [0, 0.35, 1]);
-  const brightness = useTransform(facing, [0, 1], [0.45, 1]);
-  const filter = useTransform(brightness, (b) => `brightness(${b})`);
+  // Assombrissement des cartes de côté par un voile plutôt qu'un filtre CSS : un filtre par carte
+  // imposait au téléphone une passe de rendu supplémentaire à chaque image, même au défilement
+  const shade = useTransform(facing, [0, 1], [0.55, 0]);
 
   return (
     <motion.button
@@ -69,7 +70,6 @@ function RingCard({
         marginTop: -80,
         transform: `rotateY(${base}deg) translateZ(${radius}px)`,
         opacity,
-        filter,
       }}
     >
       <span
@@ -83,6 +83,7 @@ function RingCard({
           aria-hidden
           className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--accent)_28%,transparent),transparent)]"
         />
+        <motion.span aria-hidden className="pointer-events-none absolute inset-0 z-10 rounded-[inherit] bg-black" style={{ opacity: shade }} />
         <CategoryIcon
           name={category.icon}
           size={30}
@@ -197,7 +198,7 @@ export function CategoryRing({ categories, active, onChange }: Props) {
         {/* Reflet au sol */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-[10%] bottom-2 h-10 rounded-[100%] bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--accent)_16%,transparent),transparent)] blur-md"
+          className="pointer-events-none absolute inset-x-[10%] bottom-2 h-10 rounded-[100%] bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--accent)_16%,transparent),transparent)]"
         />
       </div>
 

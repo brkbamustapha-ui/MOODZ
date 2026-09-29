@@ -85,7 +85,7 @@ export function Intro({ tagline, logoUrl }: { tagline: string; logoUrl?: string 
         >
           <div
             aria-hidden
-            className="pointer-events-none absolute left-1/2 top-1/2 h-[50vmin] w-[90vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--accent)_16%,transparent),transparent)] blur-2xl"
+            className="pointer-events-none absolute left-1/2 top-1/2 h-[50vmin] w-[90vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--accent)_16%,transparent),transparent)]"
           />
           {logoUrl ? (
             <UploadedLogoReveal url={logoUrl} tagline={tagline} />

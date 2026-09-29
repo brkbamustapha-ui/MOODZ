@@ -2,7 +2,7 @@
 
 import { ArrowRightIcon, MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react";
 import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import type { PublicCategory } from "@/lib/types";
 import { CategoryIcon } from "../CategoryIcon";
 import { scrollToY } from "../SmoothScroll";
@@ -45,8 +45,8 @@ function Panel({ category, direction }: { category: PublicCategory; direction: n
           {category.items.map((item, i) => (
             <motion.div
               key={item.id}
-              initial={reduce ? false : { opacity: 0, y: 18, filter: "blur(6px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              initial={reduce ? false : { opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.18 + Math.min(i, 10) * 0.045, ease: EASE }}
               className="border-b border-line/70 last:border-b-0 lg:[&:nth-last-child(2):nth-child(odd)]:border-b-0"
             >
@@ -59,14 +59,71 @@ function Panel({ category, direction }: { category: PublicCategory; direction: n
   );
 }
 
+/**
+ * Barre de catégories compacte, visible quand le carrousel sort de l'écran.
+ * Toujours montée et animée en CSS (sur le compositeur) ; sa visibilité est suivie ici, pour que
+ * la carte entière ne se re-rende pas pendant le défilement.
+ */
+function CompactBar({
+  menu,
+  active,
+  disabled,
+  ringRef,
+  sectionRef,
+  onSelect,
+}: {
+  menu: PublicCategory[];
+  active: number;
+  disabled: boolean;
+  ringRef: RefObject<HTMLDivElement | null>;
+  sectionRef: RefObject<HTMLElement | null>;
+  onSelect: (index: number) => void;
+}) {
+  const ringVisible = useInView(ringRef, { margin: "-80px 0px 0px 0px" });
+  const sectionVisible = useInView(sectionRef, { margin: "-170px 0px -25% 0px" });
+  const visible = !ringVisible && sectionVisible && !disabled;
+  const railRef = useRef<HTMLDivElement>(null);
+
+  // Garde la catégorie active centrée dans la barre (13 catégories dépassent la largeur d'un téléphone)
+  useEffect(() => {
+    const rail = railRef.current;
+    const button = rail?.children[active] as HTMLElement | undefined;
+    if (!visible || !rail || !button) return;
+    rail.scrollTo({ left: button.offsetLeft - (rail.clientWidth - button.offsetWidth) / 2, behavior: "smooth" });
+  }, [active, visible]);
+
+  return (
+    <div
+      className={`fixed inset-x-0 top-[76px] z-30 flex justify-center px-3 transition-[opacity,translate,visibility] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] sm:top-[92px] ${
+        visible ? "visible translate-y-0 opacity-100" : "invisible -translate-y-3 opacity-0"
+      }`}
+      inert={!visible}
+    >
+      <div ref={railRef} className="glass flex max-w-full gap-1 overflow-x-auto rounded-full p-1.5 [scrollbar-width:none]">
+        {menu.map((c, i) => (
+          <button
+            key={c.id}
+            type="button"
+            onClick={() => onSelect(i)}
+            className={`flex h-9 shrink-0 items-center gap-2 rounded-full px-3.5 text-[13px] transition-colors duration-500 ${
+              i === active ? "btn-gold font-medium" : "text-text-2 hover:text-text"
+            }`}
+          >
+            <CategoryIcon name={c.icon} size={15} weight={i === active ? "regular" : "light"} />
+            {c.name}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function MenuSection({ menu }: { menu: PublicCategory[] }) {
   const [active, setActive] = useState(0);
   const [direction, setDirection] = useState(1);
   const [query, setQuery] = useState("");
   const ringRef = useRef<HTMLDivElement>(null);
-  const ringVisible = useInView(ringRef, { margin: "-80px 0px 0px 0px" });
   const sectionRef = useRef<HTMLElement>(null);
-  const sectionVisible = useInView(sectionRef, { margin: "-170px 0px -25% 0px" });
   const panelTop = useRef<HTMLDivElement>(null);
 
   const select = (index: number, scroll = false) => {
@@ -134,7 +191,7 @@ export function MenuSection({ menu }: { menu: PublicCategory[] }) {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Rechercher : cappuccino, burger, tiramisu..."
+              placeholder="Rechercher : burger, pizza, tacos..."
               className="h-13 w-full rounded-full bg-surface/80 pl-12 pr-12 text-[15px] text-text shadow-[inset_0_0_0_1px_var(--line-strong)] outline-none transition-shadow duration-500 placeholder:text-text-3 focus:shadow-[inset_0_0_0_1px_var(--gold-400)]"
               autoComplete="off"
             />
@@ -155,34 +212,14 @@ export function MenuSection({ menu }: { menu: PublicCategory[] }) {
           <CategoryRing categories={menu} active={active} onChange={(i) => select(i)} />
         </div>
 
-        {/* Barre de catégories compacte, visible quand le carrousel sort de l'écran */}
-        <AnimatePresence>
-          {!ringVisible && sectionVisible && !results && (
-            <motion.div
-              className="fixed inset-x-0 top-[76px] z-30 flex justify-center px-3 sm:top-[92px]"
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.45, ease: EASE }}
-            >
-              <div className="glass flex max-w-full gap-1 overflow-x-auto rounded-full p-1.5 [scrollbar-width:none]">
-                {menu.map((c, i) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => select(i, true)}
-                    className={`flex h-9 shrink-0 items-center gap-2 rounded-full px-3.5 text-[13px] transition-colors duration-500 ${
-                      i === active ? "btn-gold font-medium" : "text-text-2 hover:text-text"
-                    }`}
-                  >
-                    <CategoryIcon name={c.icon} size={15} weight={i === active ? "regular" : "light"} />
-                    {c.name}
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <CompactBar
+          menu={menu}
+          active={active}
+          disabled={!!results}
+          ringRef={ringRef}
+          sectionRef={sectionRef}
+          onSelect={(i) => select(i, true)}
+        />
 
         <div ref={panelTop} className="relative mt-12" style={{ perspective: 1600 }}>
           {results ? (

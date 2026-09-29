@@ -140,7 +140,7 @@ export function Nav({ settings }: { settings: PublicSettings }) {
         {menuOpen && (
           <motion.div
             id="menu-mobile"
-            className="fixed inset-0 z-30 flex flex-col bg-bg/85 px-6 pb-10 pt-28 backdrop-blur-2xl lg:hidden"
+            className="fixed inset-0 z-30 flex flex-col bg-bg/95 px-6 pb-10 pt-28 lg:hidden pointer-fine:bg-bg/85 pointer-fine:backdrop-blur-2xl"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.3 } }}

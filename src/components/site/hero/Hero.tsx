@@ -3,9 +3,9 @@
 import { ArrowDownRightIcon, MapPinIcon } from "@phosphor-icons/react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { LogoMark } from "@/components/brand/LogoMark";
-import { useClientValue } from "@/lib/hooks/useMediaQuery";
+import { useClientValue, useMediaQuery } from "@/lib/hooks/useMediaQuery";
 import type { OpenStatus } from "@/lib/hours";
 import type { PublicSettings } from "@/lib/site-config";
 import { scrollToId } from "../SmoothScroll";
@@ -19,7 +19,10 @@ function supportsWebGL(): boolean {
   if (webglSupport === undefined) {
     try {
       const canvas = document.createElement("canvas");
-      webglSupport = !!(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+      const context = canvas.getContext("webgl2") || canvas.getContext("webgl");
+      webglSupport = !!context;
+      // Libère tout de suite ce contexte de test (leur nombre est limité par le navigateur)
+      context?.getExtension("WEBGL_lose_context")?.loseContext();
     } catch {
       webglSupport = false;
     }
@@ -27,20 +30,54 @@ function supportsWebGL(): boolean {
   return webglSupport;
 }
 
-const rise = {
-  hidden: { opacity: 0, y: 20, filter: "blur(8px)" },
-  show: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 1.1, delay: 0.35 + i * 0.13, ease: EASE },
-  }),
+/** Apparition des textes. Le flou d'entrée est réservé aux ordinateurs : trop coûteux sur mobile. */
+const RISE = {
+  hidden: { opacity: 0, y: 20 },
+  show: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 1.1, delay: 0.35 + i * 0.13, ease: EASE } }),
 };
+const RISE_SOFT = {
+  hidden: { ...RISE.hidden, filter: "blur(8px)" },
+  show: (i: number) => ({ ...RISE.show(i), filter: "blur(0px)" }),
+};
+
+/** Logo à plat : sans WebGL, ou si la scène 3D échoue. */
+function FlatLogo({ url }: { url: string | null }) {
+  return (
+    <div className="flex h-full items-center justify-center px-8">
+      {url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={url} alt="" className="max-h-[50%] w-[min(60vw,420px)] object-contain" />
+      ) : (
+        <LogoMark className="w-[min(78vw,720px)]" />
+      )}
+    </div>
+  );
+}
+
+/** Une erreur WebGL (contexte refusé, pilote) ne doit pas faire tomber toute la page. */
+class SceneBoundary extends Component<{ onError: () => void; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    console.warn("Logo 3D indisponible", error);
+    this.props.onError();
+  }
+
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
 
 export function Hero({ settings, status, play }: { settings: PublicSettings; status: OpenStatus; play: boolean }) {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion() ?? false;
   const webgl = useClientValue<boolean | null>(supportsWebGL, null);
+  const soft = useMediaQuery("(hover: hover) and (pointer: fine)");
+  const [scene, setScene] = useState<"loading" | "ready" | "failed">("loading");
   const [active, setActive] = useState(true);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const contentY = useTransform(scrollYProgress, [0, 1], [0, -90]);
@@ -57,6 +94,7 @@ export function Hero({ settings, status, play }: { settings: PublicSettings; sta
 
   const initial = reduce ? false : "hidden";
   const animate = play ? "show" : "hidden";
+  const rise = soft ? RISE_SOFT : RISE;
 
   return (
     <section
@@ -66,31 +104,32 @@ export function Hero({ settings, status, play }: { settings: PublicSettings; sta
     >
       {/* Lumières d'ambiance */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-1/2 top-[38%] h-[70vmin] w-[110vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--accent)_22%,transparent),transparent)] blur-2xl" />
+        <div className="absolute left-1/2 top-[38%] h-[70vmin] w-[110vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--accent)_22%,transparent),transparent)]" />
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-bg via-bg/70 to-transparent" />
         <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_40%,transparent_40%,var(--bg)_100%)]" />
       </div>
 
       {/* Logo 3D */}
       <motion.div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-[78%] sm:h-[82%]" style={{ scale: reduce ? 1 : sceneScale }}>
-        {webgl === false && (
-          <div className="flex h-full items-center justify-center px-8">
-            {settings.logoDataUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={settings.logoDataUrl} alt="" className="max-h-[50%] w-[min(60vw,420px)] object-contain" />
-            ) : (
-              <LogoMark className="w-[min(78vw,720px)]" />
-            )}
-          </div>
-        )}
-        {webgl && (
+        {(webgl === false || scene === "failed") && <FlatLogo url={settings.logoDataUrl} />}
+        {webgl && scene !== "failed" && (
           <motion.div
             className="h-full w-full"
             initial={{ opacity: 0 }}
-            animate={{ opacity: play ? 1 : 0 }}
+            animate={{ opacity: play && scene === "ready" ? 1 : 0 }}
             transition={{ duration: 1.6, ease: EASE }}
           >
-            <HeroScene accent={settings.theme.accent} active={active} reduceMotion={reduce} logoUrl={settings.logoDataUrl} />
+            <SceneBoundary onError={() => setScene("failed")}>
+              <HeroScene
+                accent={settings.theme.accent}
+                active={active}
+                play={play}
+                reduceMotion={reduce}
+                logoUrl={settings.logoDataUrl}
+                scroll={scrollYProgress}
+                onReady={() => setScene("ready")}
+              />
+            </SceneBoundary>
           </motion.div>
         )}
       </motion.div>

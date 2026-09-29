@@ -44,11 +44,18 @@ Textes de l'interface et commentaires du code en français.
 
 - Zod 4 : `.partial()` applique les `.default()`. Les schémas de modification (`*PatchSchema` dans
   `src/lib/validation.ts`) sont construits sans valeurs par défaut, sinon un PATCH efface des champs.
+- JSON en base : écrire `$1::text::jsonb` avec `JSON.stringify(...)`. Avec postgres.js, `$1::jsonb`
+  ré-encode le texte et stocke une chaîne JSON (PGlite ne le fait pas : le bug n'apparaît qu'en production).
 - Règles du React Compiler actives : pas de `setState` dans un effet (utiliser
   `useSyncExternalStore`, `useClientValue`/`useMediaQuery` de `src/lib/hooks`), pas de mutation de
   props ; en 3D, l'état mutable passe par des refs et l'aléatoire par un PRNG à graine.
 - La scène 3D (`hero/HeroScene.tsx`) est chargée à la demande (`ssr: false`) : ne pas y ajouter de
   dépendance lourde (drei a été retiré pour cette raison).
+- Fluidité sur téléphone (mesurer avec Playwright, CPU ralenti ×4 par CDP) : la scène 3D compile ses
+  shaders avec `compileAsync` et prépare lettres et reflets hors du rendu ; profil allégé au doigt
+  (matériaux standard, moins de pixels). Animations dans `useSceneFrame` (l'horloge de R3F repart de
+  zéro quand le rendu reprend). Au doigt : pas de `backdrop-filter` (règle `.glass` dans
+  `globals.css`), pas de filtre CSS animé, pas d'or liquide WebGL (`LiquidGold` passe en CSS).
 - Couleur d'accent : `--accent` vient des réglages ; les nuances or sont dérivées par `color-mix`
   dans `src/app/globals.css` (Tailwind v4, configuration en CSS).
 - Le logotype vient de `src/lib/brand/logo-glyphs.ts`, généré par `scripts/generate-logo.mjs`.

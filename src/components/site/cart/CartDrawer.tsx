@@ -212,7 +212,7 @@ export function CartDrawer({ settings, status }: { settings: PublicSettings; sta
       {cart.isOpen && (
         <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Votre panier">
           <motion.div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/70 pointer-fine:bg-black/60 pointer-fine:backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
