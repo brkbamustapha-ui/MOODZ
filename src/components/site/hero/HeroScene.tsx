@@ -109,13 +109,13 @@ function Wordmark({ accent, animate }: { accent: string; animate: boolean }) {
       roughness: 0.2,
       clearcoat: 0.5,
       clearcoatRoughness: 0.18,
-      envMapIntensity: 1.25,
+      envMapIntensity: 1.45,
     });
     const side = new THREE.MeshPhysicalMaterial({
       color: color.clone().multiplyScalar(0.82),
       metalness: 1,
       roughness: 0.34,
-      envMapIntensity: 1,
+      envMapIntensity: 1.15,
     });
     return [face, side];
   }, [accent]);
@@ -225,17 +225,6 @@ function Medallion({ url, accent, animate }: { url: string; accent: string; anim
   const texture = useLogoTexture(url);
   const radius = Math.min(1.5, viewport.height * 0.24, viewport.width * 0.34);
 
-  const [face, rim] = useMemo(() => {
-    const faceMat = new THREE.MeshPhysicalMaterial({ color: "#ffffff", metalness: 0.25, roughness: 0.45, clearcoat: 0.8, clearcoatRoughness: 0.15 });
-    const rimMat = new THREE.MeshPhysicalMaterial({ color: new THREE.Color(accent), metalness: 1, roughness: 0.22, clearcoat: 0.4, envMapIntensity: 1.3 });
-    return [faceMat, rimMat];
-  }, [accent]);
-
-  useEffect(() => {
-    face.map = texture;
-    face.needsUpdate = true;
-  }, [face, texture]);
-
   useFrame((state, delta) => {
     const g = group.current;
     if (!g || !animate) return;
@@ -247,17 +236,29 @@ function Medallion({ url, accent, animate }: { url: string; accent: string; anim
 
   return (
     <group ref={group}>
-      {/* Pièce : face avant (logo) orientée vers la caméra */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} material={[rim, face, rim]}>
+      {/* Pièce : face avant (logo) orientée vers la caméra ; groupes du cylindre : 0 tranche, 1 dessus, 2 dessous */}
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[radius, radius, 0.22, 128]} />
+        <meshPhysicalMaterial attach="material-0" color={accent} metalness={1} roughness={0.22} clearcoat={0.4} envMapIntensity={1.5} />
+        <meshPhysicalMaterial
+          key={texture ? "logo" : "vide"}
+          attach="material-1"
+          map={texture}
+          color="#ffffff"
+          metalness={0.25}
+          roughness={0.45}
+          clearcoat={0.8}
+          clearcoatRoughness={0.15}
+        />
+        <meshPhysicalMaterial attach="material-2" color={accent} metalness={1} roughness={0.22} envMapIntensity={1.5} />
       </mesh>
       <mesh position={[0, 0, 0.1]}>
         <torusGeometry args={[radius, 0.07, 32, 200]} />
-        <primitive object={rim} attach="material" />
+        <meshPhysicalMaterial color={accent} metalness={1} roughness={0.22} clearcoat={0.4} envMapIntensity={1.5} />
       </mesh>
       <mesh position={[0, 0, 0.12]}>
         <torusGeometry args={[radius * 0.9, 0.012, 16, 200]} />
-        <primitive object={rim} attach="material" />
+        <meshPhysicalMaterial color={accent} metalness={1} roughness={0.22} envMapIntensity={1.5} />
       </mesh>
     </group>
   );
@@ -306,107 +307,115 @@ function buildPanel(panel: Panel) {
 }
 
 /** Reflets du métal : quelques panneaux lumineux, précalculés une seule fois (PMREM). */
-function StudioEnvironment({ intensity = 1.15 }: { intensity?: number }) {
-  const { gl, scene } = useThree();
-  useEffect(() => {
-    const envScene = new THREE.Scene();
-    envScene.background = new THREE.Color("#050403");
-    for (const panel of PANELS) envScene.add(buildPanel(panel));
-    const tilted = new THREE.Group();
-    tilted.rotation.set(-Math.PI / 3, 0, 1);
-    for (const panel of TILTED_PANELS) tilted.add(buildPanel(panel));
-    envScene.add(tilted);
-
-    const pmrem = new THREE.PMREMGenerator(gl);
-    const target = pmrem.fromScene(envScene, 0.02);
-    scene.environment = target.texture;
-    scene.environmentIntensity = intensity;
-    return () => {
-      scene.environment = null;
-      target.dispose();
-      pmrem.dispose();
-      envScene.traverse((object) => {
-        if (object instanceof THREE.Mesh) {
-          object.geometry.dispose();
-          (object.material as THREE.Material).dispose();
-        }
-      });
-    };
-  }, [gl, scene, intensity]);
-  return null;
+function buildEnvironment(gl: THREE.WebGLRenderer) {
+  const envScene = new THREE.Scene();
+  envScene.background = new THREE.Color("#050403");
+  for (const panel of PANELS) envScene.add(buildPanel(panel));
+  const tilted = new THREE.Group();
+  tilted.rotation.set(-Math.PI / 3, 0, 1);
+  for (const panel of TILTED_PANELS) tilted.add(buildPanel(panel));
+  envScene.add(tilted);
+  const pmrem = new THREE.PMREMGenerator(gl);
+  const target = pmrem.fromScene(envScene, 0.02);
+  pmrem.dispose();
+  envScene.traverse((object) => {
+    if (object instanceof THREE.Mesh) {
+      object.geometry.dispose();
+      (object.material as THREE.Material).dispose();
+    }
+  });
+  return target;
 }
+
+function StudioEnvironment() {
+  const gl = useThree((state) => state.gl);
+  const target = useMemo(() => buildEnvironment(gl), [gl]);
+  useEffect(() => () => target.dispose(), [target]);
+  return <primitive object={target.texture} attach="environment" />;
+}
+
+/** Générateur pseudo-aléatoire déterministe (rendu pur, positions stables). */
+function mulberry32(seed: number) {
+  let a = seed;
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const DUST_VERTEX = /* glsl */ `
+  uniform float uTime;
+  uniform float uPixelRatio;
+  attribute float aSeed;
+  varying float vAlpha;
+  void main() {
+    vec3 p = position;
+    p.y += sin(uTime * 0.35 + aSeed * 6.2831) * 0.35;
+    p.x += cos(uTime * 0.25 + aSeed * 12.566) * 0.25;
+    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+    gl_Position = projectionMatrix * mv;
+    gl_PointSize = (3.0 + aSeed * 4.0) * uPixelRatio * (9.0 / -mv.z);
+    vAlpha = 0.35 + 0.65 * (0.5 + 0.5 * sin(uTime * (0.8 + aSeed) + aSeed * 40.0));
+  }
+`;
+
+const DUST_FRAGMENT = /* glsl */ `
+  uniform vec3 uColor;
+  varying float vAlpha;
+  void main() {
+    float d = length(gl_PointCoord - 0.5);
+    float a = smoothstep(0.5, 0.0, d) * vAlpha * 0.8;
+    if (a < 0.01) discard;
+    gl_FragColor = vec4(uColor, a);
+  }
+`;
 
 /** Poussière d'or : particules scintillantes (un seul appel de rendu, shader minimal). */
 function GoldDust({ color, count = 70 }: { color: string; count?: number }) {
-  const material = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-        uniforms: {
-          uTime: { value: 0 },
-          uColor: { value: new THREE.Color(color) },
-          uPixelRatio: { value: 1 },
-        },
-        vertexShader: /* glsl */ `
-          uniform float uTime;
-          uniform float uPixelRatio;
-          attribute float aSeed;
-          varying float vAlpha;
-          void main() {
-            vec3 p = position;
-            p.y += sin(uTime * 0.35 + aSeed * 6.2831) * 0.35;
-            p.x += cos(uTime * 0.25 + aSeed * 12.566) * 0.25;
-            vec4 mv = modelViewMatrix * vec4(p, 1.0);
-            gl_Position = projectionMatrix * mv;
-            gl_PointSize = (3.0 + aSeed * 4.0) * uPixelRatio * (9.0 / -mv.z);
-            vAlpha = 0.35 + 0.65 * (0.5 + 0.5 * sin(uTime * (0.8 + aSeed) + aSeed * 40.0));
-          }
-        `,
-        fragmentShader: /* glsl */ `
-          uniform vec3 uColor;
-          varying float vAlpha;
-          void main() {
-            float d = length(gl_PointCoord - 0.5);
-            float a = smoothstep(0.5, 0.0, d) * vAlpha * 0.8;
-            if (a < 0.01) discard;
-            gl_FragColor = vec4(uColor, a);
-          }
-        `,
-      }),
-    [color],
-  );
+  const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const uniforms = useMemo(() => ({ uTime: { value: 0 }, uColor: { value: new THREE.Color(color) }, uPixelRatio: { value: 1 } }), [color]);
 
   const geometry = useMemo(() => {
+    const random = mulberry32(20260929);
     const g = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const seeds = new Float32Array(count);
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 14;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 6;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 5;
-      seeds[i] = Math.random();
+      positions[i * 3] = (random() - 0.5) * 14;
+      positions[i * 3 + 1] = (random() - 0.5) * 6;
+      positions[i * 3 + 2] = (random() - 0.5) * 5;
+      seeds[i] = random();
     }
     g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     g.setAttribute("aSeed", new THREE.BufferAttribute(seeds, 1));
     return g;
   }, [count]);
 
-  useEffect(
-    () => () => {
-      geometry.dispose();
-      material.dispose();
-    },
-    [geometry, material],
-  );
+  useEffect(() => () => geometry.dispose(), [geometry]);
 
   useFrame((state) => {
+    const material = materialRef.current;
+    if (!material) return;
     material.uniforms.uTime.value = state.clock.elapsedTime;
     material.uniforms.uPixelRatio.value = state.gl.getPixelRatio();
   });
 
-  return <points geometry={geometry} material={material} />;
+  return (
+    <points geometry={geometry}>
+      <shaderMaterial
+        ref={materialRef}
+        uniforms={uniforms}
+        vertexShader={DUST_VERTEX}
+        fragmentShader={DUST_FRAGMENT}
+        transparent
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
+  );
 }
 
 /** Fait tourner lentement l'environnement : les reflets glissent sur le métal (sans recalcul coûteux). */
@@ -456,7 +465,7 @@ export default function HeroScene({
       <Halo accent={accent} animate={animate} />
       <EnvironmentSweep animate={animate} />
       {animate && <GoldDust color={accent} />}
-      <StudioEnvironment intensity={1.15} />
+      <StudioEnvironment />
     </Canvas>
   );
 }
