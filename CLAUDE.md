@@ -16,10 +16,13 @@ Textes de l'interface et commentaires du code en français.
 
 ## Architecture
 
-- `src/lib/db/` : `getDb()` choisit PostgreSQL (`DATABASE_URL`, pooler Supabase, `prepare: false`)
-  ou PGlite. Les migrations de `migrations.ts` s'appliquent au démarrage : ajouter une nouvelle
-  entrée, ne jamais modifier une migration existante, puis `npx tsx scripts/export-sql.ts`.
-  RLS activée sur chaque table (aucun accès via l'API publique Supabase).
+- `src/lib/db/` : `getDb()` choisit PostgreSQL (`DATABASE_URL`, sinon `POSTGRES_URL` de
+  l'intégration Vercel–Supabase ; pooler en mode transaction, `prepare: false`) ou PGlite. Les
+  migrations de `migrations.ts` s'appliquent au démarrage : ajouter une nouvelle entrée, ne jamais
+  modifier une migration existante, puis `npx tsx scripts/export-sql.ts`. RLS activée sur chaque table.
+- `DATABASE_SCHEMA` (base partagée avec un autre site) : chaque requête passe par une transaction
+  qui fixe `search_path` sur ce schéma. Garder le SQL sans nom de schéma (`orders`, pas
+  `public.orders`) et passer par `db.query` / `db.transaction`, jamais par le client brut.
 - `src/lib/server/` (`server-only`) : auth (bcrypt + JWT HS256 dans le cookie `moodz_admin`,
   `session_version` pour révoquer), commandes, carte, statistiques, limites de débit en base.
 - Chaque handler `src/app/api/admin/**` commence par `guardAdmin(request)` (session + contrôle

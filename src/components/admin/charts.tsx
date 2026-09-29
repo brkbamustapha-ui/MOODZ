@@ -16,10 +16,12 @@ export function niceTicks(max: number, count = 4): number[] {
   if (max <= 0) return [0];
   const rough = max / count;
   const pow = Math.pow(10, Math.floor(Math.log10(rough)));
-  const step = [1, 2, 2.5, 5, 10].map((m) => m * pow).find((s) => s >= rough) ?? 10 * pow;
+  const nice = [1, 2, 2.5, 5, 10].map((m) => m * pow).find((s) => s >= rough) ?? 10 * pow;
+  // Valeurs entières (dinars, commandes) : pas de graduation fractionnaire, qui donnerait 0, 0, 1, 1...
+  const step = Math.max(1, Math.ceil(nice));
   const top = Math.ceil(max / step) * step;
   const ticks: number[] = [];
-  for (let v = 0; v <= top + step / 2; v += step) ticks.push(Math.round(v));
+  for (let v = 0; v <= top; v += step) ticks.push(v);
   return ticks;
 }
 

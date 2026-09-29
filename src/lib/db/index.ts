@@ -31,15 +31,26 @@ class PostgresQueryable implements Queryable {
   }
 }
 
-class PostgresDatabase extends PostgresQueryable implements Database {
+class PostgresDatabase implements Database {
   readonly kind = "postgres" as const;
 
-  constructor(private readonly client: PostgresClient) {
-    super(client);
+  constructor(
+    private readonly client: PostgresClient,
+    private readonly schema: string | null,
+  ) {}
+
+  async query<T = Row>(text: string, params: unknown[] = []): Promise<T[]> {
+    if (!this.schema) return new PostgresQueryable(this.client).query<T>(text, params);
+    // Base partagée : chaque requête passe par une transaction qui fixe le schéma de MOODZ.
+    // Compatible avec le pooler en mode transaction, où l'état de session n'est pas conservé.
+    return this.transaction((tx) => tx.query<T>(text, params));
   }
 
   async transaction<R>(fn: (tx: Queryable) => Promise<R>): Promise<R> {
-    const result = await this.client.begin((tx) => fn(new PostgresQueryable(tx)));
+    const result = await this.client.begin(async (tx) => {
+      if (this.schema) await tx.unsafe(`select set_config('search_path', $1, true)`, [this.schema]);
+      return fn(new PostgresQueryable(tx));
+    });
     return result as R;
   }
 }
@@ -68,18 +79,39 @@ class PGliteDatabase extends PGliteQueryable implements Database {
   }
 }
 
-function isLocalHost(url: string) {
-  try {
-    const { hostname } = new URL(url);
-    return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
-  } catch {
-    return false;
-  }
+/** Adresse de la base : DATABASE_URL, sinon POSTGRES_URL (ajoutée par l'intégration Vercel–Supabase). */
+function getDatabaseUrl(): string | undefined {
+  return process.env.DATABASE_URL?.trim() || process.env.POSTGRES_URL?.trim() || undefined;
 }
 
-async function createPostgres(url: string): Promise<Database> {
+/** Schéma dédié à MOODZ quand la base est partagée avec d'autres sites (DATABASE_SCHEMA). */
+function getSchema(): string | null {
+  const schema = process.env.DATABASE_SCHEMA?.trim();
+  if (!schema) return null;
+  if (!/^[a-z_][a-z0-9_]{0,62}$/.test(schema)) {
+    throw new Error("DATABASE_SCHEMA invalide : lettres minuscules, chiffres et _ uniquement (ex. moodz).");
+  }
+  return schema;
+}
+
+function isLocalHost(hostname: string) {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1" || hostname === "[::1]";
+}
+
+async function createPostgres(rawUrl: string, schema: string | null): Promise<Database> {
   const { default: postgres } = await import("postgres");
-  const sslDisabled = process.env.DATABASE_SSL === "disable" || url.includes("sslmode=disable") || isLocalHost(url);
+  let url = rawUrl;
+  let sslDisabled = process.env.DATABASE_SSL === "disable";
+  try {
+    const parsed = new URL(rawUrl);
+    sslDisabled ||= parsed.searchParams.get("sslmode") === "disable" || isLocalHost(parsed.hostname);
+    // Les paramètres ajoutés par les hébergeurs (supa, pgbouncer, sslmode...) ne sont pas des réglages
+    // PostgreSQL : postgres.js les transmettrait tels quels au serveur à la connexion.
+    parsed.search = "";
+    url = parsed.toString();
+  } catch {
+    // Adresse non standard (plusieurs hôtes...) : transmise telle quelle.
+  }
   const client = postgres(url, {
     // Compatible avec le pooler Supabase (mode transaction) : pas de requêtes préparées nommées.
     prepare: false,
@@ -89,26 +121,41 @@ async function createPostgres(url: string): Promise<Database> {
     ssl: sslDisabled ? false : "require",
     onnotice: () => {},
   });
-  return new PostgresDatabase(client);
+  if (schema) {
+    // Vérification préalable : un rôle sans droit CREATE sur la base peut utiliser un schéma existant.
+    const exists = async () =>
+      (await client.unsafe(`select 1 from pg_namespace where nspname = $1`, [schema])).length > 0;
+    if (!(await exists())) {
+      try {
+        await client.unsafe(`create schema if not exists "${schema}"`);
+      } catch (error) {
+        if (!(await exists())) throw error; // sinon créé au même instant par une autre instance
+      }
+    }
+  }
+  return new PostgresDatabase(client, schema);
 }
 
-async function createPGlite(): Promise<Database> {
+async function createPGlite(schema: string | null): Promise<Database> {
   if (process.env.VERCEL) {
     throw new Error(
-      "DATABASE_URL est requis sur Vercel (le système de fichiers n'est pas persistant). " +
-        "Ajoutez l'URL de connexion Supabase/PostgreSQL dans les variables d'environnement.",
+      "Base de données manquante sur Vercel (le système de fichiers n'y est pas persistant). " +
+        "Reliez une base Supabase au projet (onglet Storage, qui ajoute POSTGRES_URL) ou définissez DATABASE_URL.",
     );
   }
   const { PGlite } = await import("@electric-sql/pglite");
   const dir = process.env.PGLITE_DIR ?? path.join(process.cwd(), ".data", "pglite");
   fs.mkdirSync(dir, { recursive: true });
   const client = await PGlite.create(dir);
+  // Une seule session : le schéma choisi reste actif pour toutes les requêtes.
+  if (schema) await client.exec(`create schema if not exists "${schema}"; set search_path to "${schema}";`);
   return new PGliteDatabase(client);
 }
 
 async function init(): Promise<Database> {
-  const url = process.env.DATABASE_URL?.trim();
-  const db = url ? await createPostgres(url) : await createPGlite();
+  const url = getDatabaseUrl();
+  const schema = getSchema();
+  const db = url ? await createPostgres(url, schema) : await createPGlite(schema);
   await runMigrations(db);
   await seedDatabase(db);
   return db;

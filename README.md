@@ -65,41 +65,65 @@ terminal (ex. `http://192.168.1.10:3000`).
 
 ## Mise en ligne (Vercel + Supabase)
 
-Le site a besoin d'une base PostgreSQL hébergée. Supabase (offre gratuite) convient très bien.
+Le site a besoin d'une base PostgreSQL hébergée. Vercel met en ligne la branche par défaut du dépôt
+GitHub : c'est elle qui doit contenir la dernière version du code.
 
-1. **Créer la base** sur [supabase.com](https://supabase.com) : nouveau projet, région
-   **West EU (Paris)**, la plus proche d'Oran. Notez le mot de passe de la base.
-2. **Copier l'adresse de connexion** : bouton **Connect** du projet, mode **Transaction pooler**
-   (port `6543`). Remplacez `[YOUR-PASSWORD]` par le mot de passe de l'étape 1.
-3. **Importer le dépôt GitHub** sur [vercel.com](https://vercel.com) (*Add New > Project*).
-   Next.js est détecté automatiquement. `vercel.json` place les fonctions à Paris (`cdg1`), à côté
-   de la base.
-4. **Variables d'environnement** (voir `.env.example`) :
+### A. Partager une base Supabase déjà reliée à Vercel
+
+Si une base Supabase apparaît déjà dans l'onglet **Storage** de Vercel, MOODZ peut s'y installer dans son
+propre schéma `moodz`, sans toucher aux tables des autres sites. Les identifiants de connexion passent
+directement de Supabase à Vercel : personne n'a à les copier.
+
+1. **Importer le dépôt** sur [vercel.com](https://vercel.com) : *Add New > Project*, dépôt `MOODZ`.
+   Next.js est détecté automatiquement.
+2. **Variables d'environnement**, avant de cliquer sur *Deploy* :
 
    | Variable | Valeur |
    | --- | --- |
-   | `DATABASE_URL` | l'adresse de l'étape 2 (obligatoire) |
+   | `DATABASE_SCHEMA` | `moodz` |
    | `ADMIN_USERNAME` | votre identifiant gérant, ex. `moodz` |
-   | `ADMIN_PASSWORD` | un mot de passe long et unique (obligatoire) |
-   | `AUTH_SECRET` | une clé aléatoire de 32 caractères ou plus : `openssl rand -base64 48` |
+   | `ADMIN_PASSWORD` | un mot de passe long et unique |
+
+3. **Relier la base** : onglet **Storage** du projet, *Connect Database*, choisissez la base Supabase
+   existante. Vercel ajoute `POSTGRES_URL`, que MOODZ utilise automatiquement.
+4. **Redéployer** : *Deployments*, menu du dernier déploiement, *Redeploy*. Au premier démarrage, MOODZ
+   crée son schéma, ses tables, la carte d'exemple et le compte gérant. Connectez-vous sur `/admin`.
+
+### B. Nouvelle base Supabase
+
+1. **Créer la base** sur [supabase.com](https://supabase.com) et noter le mot de passe de la base.
+2. **Copier l'adresse de connexion** : bouton **Connect** du projet, mode **Transaction pooler**
+   (port `6543`), en remplaçant `[YOUR-PASSWORD]`.
+3. **Importer le dépôt** sur Vercel avec ces variables (voir `.env.example`) :
+
+   | Variable | Valeur |
+   | --- | --- |
+   | `DATABASE_URL` | l'adresse de l'étape 2 |
+   | `ADMIN_USERNAME` | votre identifiant gérant |
+   | `ADMIN_PASSWORD` | un mot de passe long et unique |
+   | `AUTH_SECRET` | facultatif : clé aléatoire de 32 caractères ou plus (`openssl rand -base64 48`) |
    | `NEXT_PUBLIC_SITE_URL` | facultatif : votre domaine, ex. `https://moodz-oran.com` |
 
-5. **Déployer.** Au premier démarrage, le site crée les tables, la carte d'exemple et le compte
-   gérant. Connectez-vous sur `/admin`.
-6. **Nom de domaine** (facultatif) : *Settings > Domains* dans Vercel.
+### Région et nom de domaine
+
+`vercel.json` place les fonctions du site à Washington (`iad1`), à côté des bases Supabase de la région
+`us-east-1`. Chaque page interroge la base plusieurs fois : si votre base est ailleurs, choisissez la
+région Vercel la plus proche (par exemple `cdg1` pour une base à Paris, `eu-west-3`).
+Nom de domaine (facultatif) : *Settings > Domains* dans Vercel.
 
 Les tables peuvent aussi être créées à l'avance avec `supabase/migrations/20260929000000_moodz_init.sql`
 (éditeur SQL de Supabase ou `supabase db push`), mais ce n'est pas nécessaire.
 
-> Hébergement ailleurs (VPS, serveur local) : `npm run build && npm start`. Sans `DATABASE_URL`, la base
+> Hébergement ailleurs (VPS, serveur local) : `npm run build && npm start`. Sans base PostgreSQL, la base
 > embarquée est stockée dans `.data/pglite` (dossier modifiable avec `PGLITE_DIR`), pensez à la
 > sauvegarder. En production, `ADMIN_PASSWORD` est obligatoire.
 
 ### Mot de passe oublié
 
 Les variables `ADMIN_*` ne servent qu'à créer le premier compte. Pour le recréer, exécutez
-`delete from admins;` dans l'éditeur SQL de Supabase, puis redéployez : le compte est recréé à partir
-de `ADMIN_USERNAME` et `ADMIN_PASSWORD`.
+`delete from moodz.admins;` dans l'éditeur SQL de Supabase (`delete from admins;` sans
+`DATABASE_SCHEMA`), puis redéployez : le compte est recréé à partir de `ADMIN_USERNAME` et
+`ADMIN_PASSWORD`.
 
 ---
 
