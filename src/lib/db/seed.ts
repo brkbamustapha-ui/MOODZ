@@ -14,184 +14,212 @@ type SeedItem = {
 type SeedCategory = { name: string; description: string; icon: string; items: SeedItem[] };
 
 /**
- * Carte d'exemple. Elle est chargée une seule fois, au premier démarrage,
- * et se modifie entièrement depuis le tableau de bord (Menu > Import rapide).
+ * Carte de MOODZ (menu Canva, septembre 2026). Chargée une seule fois, au premier démarrage,
+ * puis modifiable entièrement depuis le tableau de bord (Carte).
  */
-export const SAMPLE_MENU: SeedCategory[] = [
+export const INITIAL_MENU: SeedCategory[] = [
   {
-    name: "Cafés & boissons chaudes",
-    description: "Torréfaction italienne, lait entier ou végétal.",
-    icon: "coffee",
-    items: [
-      { name: "Espresso", description: "Serré, intense, crème noisette.", price: 150, cost: 35 },
-      { name: "Double espresso", price: 250, cost: 60 },
-      { name: "Café noisette", description: "Espresso et une touche de lait mousseux.", price: 180, cost: 45 },
-      { name: "Cappuccino", description: "Espresso, lait velouté, cacao.", price: 280, cost: 70, tags: ["popular"] },
-      { name: "Latte macchiato", price: 320, cost: 80 },
-      { name: "Caramel latte", description: "Latte, sirop caramel beurre salé.", price: 380, cost: 95, tags: ["signature"] },
-      { name: "Chocolat chaud", description: "Chocolat noir fondu, chantilly maison.", price: 320, cost: 90 },
-      { name: "Thé à la menthe", description: "Menthe fraîche, servi à la théière.", price: 150, cost: 30 },
-    ],
-  },
-  {
-    name: "Boissons fraîches",
-    description: "Pressées à la minute, servies bien fraîches.",
-    icon: "orange-slice",
-    items: [
-      { name: "Jus d'orange pressé", price: 300, cost: 110, tags: ["popular"] },
-      { name: "Citronnade maison", description: "Citron, menthe, eau pétillante.", price: 280, cost: 70 },
-      { name: "Mojito virgin", description: "Citron vert, menthe, sucre de canne.", price: 450, cost: 120 },
-      { name: "Smoothie fruits rouges", description: "Fraise, framboise, banane.", price: 480, cost: 160 },
-      {
-        name: "Milkshake",
-        description: "Vanille, chocolat ou fraise.",
-        price: 450,
-        cost: 140,
-        variants: [
-          { label: "Vanille", price: 450 },
-          { label: "Chocolat", price: 450 },
-          { label: "Fraise", price: 450 },
-        ],
-      },
-      { name: "Iced latte", price: 380, cost: 95, tags: ["new"] },
-      { name: "Soda", description: "Au choix, 33 cl.", price: 150, cost: 70 },
-      { name: "Eau minérale", description: "50 cl.", price: 80, cost: 30 },
-    ],
-  },
-  {
-    name: "Petit-déjeuner & brunch",
-    description: "Servi jusqu'à 13 h.",
-    icon: "egg",
-    items: [
-      {
-        name: "Formule MOODZ",
-        description: "Boisson chaude, jus pressé, viennoiserie, omelette et pain grillé.",
-        price: 950,
-        cost: 330,
-        tags: ["signature"],
-      },
-      { name: "Omelette au fromage", description: "Trois œufs, emmental, salade.", price: 450, cost: 140 },
-      { name: "Pancakes", description: "Sirop d'érable, fruits de saison.", price: 550, cost: 170, tags: ["popular"] },
-      { name: "Avocado toast", description: "Pain de campagne, avocat, œuf poché.", price: 750, cost: 290 },
-      { name: "Brunch royal", description: "Pour deux : salé, sucré, boissons chaudes et jus.", price: 2600, cost: 950 },
-    ],
-  },
-  {
-    name: "Crêpes & gaufres",
-    description: "Pâte maison, garnitures généreuses.",
-    icon: "cake",
-    items: [
-      { name: "Crêpe Nutella", price: 450, cost: 120 },
-      { name: "Crêpe Nutella banane", price: 520, cost: 145, tags: ["popular"] },
-      { name: "Gaufre chantilly", price: 400, cost: 110 },
-      { name: "Crêpe poulet fromage", description: "Poulet émincé, sauce blanche, mozzarella.", price: 650, cost: 230 },
-    ],
-  },
-  {
-    name: "Salades",
-    description: "Légumes du marché, sauces maison.",
+    name: "Entrées",
+    description: "Camembert pané, salades et gratins.",
     icon: "leaf",
     items: [
-      { name: "César au poulet", description: "Romaine, poulet grillé, parmesan, croûtons.", price: 850, cost: 300, tags: ["popular"] },
-      { name: "Niçoise", description: "Thon, œuf, olives, haricots verts.", price: 800, cost: 290 },
-      { name: "Salade MOODZ", description: "Quinoa, avocat, feta, grenade, vinaigrette citron.", price: 950, cost: 340, tags: ["signature", "veggie"] },
-      { name: "Chèvre chaud", description: "Toasts de chèvre, miel, noix.", price: 900, cost: 330, tags: ["veggie"] },
+      { name: "Camembert pané", description: "Servi avec du miel ou une sauce chili thaï.", price: 300, variants: [{ label: "2 pièces", price: 300 }, { label: "4 pièces", price: 550 }, { label: "6 pièces", price: 750 }] },
+      { name: "Salade algérienne", price: 500 },
+      { name: "Macédoine", price: 450 },
+      { name: "Salade César", price: 750 },
+      { name: "Salade au thon", price: 750 },
+      { name: "Gratin au poulet", price: 650 },
+      { name: "Gratin à la viande hachée", price: 700 },
+      { name: "Gratin au fromage", price: 650 },
+      { name: "Gratin aux crevettes", price: 950 },
     ],
   },
   {
-    name: "Sandwichs & croques",
-    description: "Servis avec frites ou salade.",
+    name: "Pastas",
+    description: "",
+    icon: "bowl-steam",
+    items: [
+      { name: "Tagliatelles Alfredo", description: "Crémeuses, pleines de saveur : poulet tendre et champignons à la perfection.", price: 850 },
+      { name: "Penne 4 fromages", description: "Cheesy mood garanti : cheddar, gruyère, gouda et mozza fondue.", price: 850 },
+      { name: "Spaghettis bolognaise", description: "Un grand classique façon MOODZ : sauce bolognaise maison et viande hachée.", price: 850 },
+      { name: "Penne crispy", description: "Sauce blanche onctueuse et poulet pané croustillant, le combo parfait.", price: 950 },
+      { name: "Spaghettis aux fruits de mer", description: "Une touche marine : sauce tomate relevée et fruits de mer frais.", price: 1200 },
+      { name: "Tagliatelles aux crevettes", description: "Sauce blanche douce et crevettes fraîches, simples et irrésistibles.", price: 1200 },
+    ],
+  },
+  {
+    name: "Sandwichs",
+    description: "Pain artisanal.",
     icon: "bread",
     items: [
-      { name: "Croque-monsieur", description: "Jambon de dinde, béchamel, emmental gratiné.", price: 550, cost: 180, tags: ["popular"] },
-      { name: "Croque-madame", description: "Le croque-monsieur et son œuf au plat.", price: 650, cost: 210 },
-      { name: "Panini poulet", price: 650, cost: 220 },
-      { name: "Club sandwich", description: "Poulet, œuf, tomate, salade, sauce cocktail.", price: 750, cost: 260 },
-      { name: "Tacos poulet", description: "Galette grillée, frites, sauce fromagère.", price: 750, cost: 250, tags: ["spicy"] },
+      { name: "Le Gourmand", description: "Viande hachée, rôti de poulet fumé, sauce fromagère, œuf, gruyère, crudités.", price: 700 },
+      { name: "Le Radical", description: "Viande hachée, crispy tenders, gruyère, sauce cheddar, sauce algérienne.", price: 700 },
+      { name: "Chicken Tandoori", description: "Poulet tandoori, gruyère, crudités.", price: 600 },
+      { name: "Chicken Curry", description: "Poulet au curry, sauce fromagère, gruyère, crudités.", price: 600 },
+      { name: "Le Phénomène", description: "Blanc de poulet grillé, champignons frais, sauce fromagère, gruyère, crudités.", price: 600 },
+      { name: "Le Big Mood", description: "Viande hachée doublée, rôti fumé grillé, mozzarella panée, crudités, sauce maison.", price: 800, tags: ["signature"] },
+      { name: "Le Carnivore", description: "Viande hachée, poulet haché, merguez, sauce fromagère, sauce tartare, gruyère, slice.", price: 700 },
+      { name: "L'Américain", description: "Crispy tenders, gruyère, sauce cheddar, sauce BBQ, crudités.", price: 600 },
+      { name: "3 Fromages", description: "Poulet, gruyère, gouda, camembert.", price: 650 },
+      { name: "Le Suprême", description: "Double viande, fromage fumé, oignons caramélisés, œuf, sauce algérienne, crudités.", price: 750 },
+      { name: "Le Mexicain", description: "Poulet mariné, poivron, oignon caramélisé, maïs, sauce piquante, gruyère, crudités.", price: 600, tags: ["spicy"] },
+      { name: "Le Mix", description: "Poulet mariné, viande hachée, sauce fromagère, sauce à l'ail, gruyère, crudités.", price: 700 },
+      { name: "Le Fish", description: "Crevettes, blanc de poulet, sauce cheddar, gruyère, crudités.", price: 850 },
+      { name: "Classic Viande", description: "Viande hachée, frites, œuf, crudités.", price: 500 },
+      { name: "Chick'n Fresh", description: "Poulet, frites, œuf, crudités.", price: 400 },
+      { name: "Marinado", description: "Poulet mariné, frites, crudités.", price: 400 },
     ],
   },
   {
     name: "Burgers",
-    description: "Pain brioché, viande hachée du jour, frites maison.",
+    description: "En simple ou en double.",
     icon: "hamburger",
     items: [
-      { name: "Classic burger", description: "Steak, cheddar, tomate, oignon, sauce maison.", price: 900, cost: 330 },
-      { name: "Chicken crispy", description: "Poulet croustillant, coleslaw, sauce miel moutarde.", price: 950, cost: 340 },
-      { name: "Burger MOODZ", description: "Double steak, cheddar affiné, oignons confits, sauce signature.", price: 1400, cost: 520, tags: ["signature"] },
-      { name: "Spicy burger", description: "Steak, jalapeños, pepper jack, sauce harissa.", price: 1000, cost: 360, tags: ["spicy", "new"] },
+      { name: "Original Burger", description: "Viande fraîche, crudités, gruyère, sauce burger.", price: 500, variants: [{ label: "Simple", price: 500 }, { label: "Double", price: 700 }] },
+      { name: "Chicken Burger", description: "Poulet haché, gruyère, crudités, sauce burger.", price: 450, variants: [{ label: "Simple", price: 450 }, { label: "Double", price: 650 }] },
+      { name: "Honey Burger", description: "Viande hachée, oignons caramélisés, camembert et miel, gruyère, crudités.", price: 750, variants: [{ label: "Simple", price: 750 }, { label: "Double", price: 950 }], tags: ["signature"] },
+      { name: "Crunchy Burger", description: "Crispy, sauce burger, onion rings, gruyère, crudités, sauce BBQ.", price: 600, variants: [{ label: "Simple", price: 600 }, { label: "Double", price: 800 }] },
+      { name: "Blue Burger", description: "Viande hachée, crudités, sauce roquefort, cornichon, gruyère.", price: 750, variants: [{ label: "Simple", price: 750 }, { label: "Double", price: 950 }] },
+      { name: "The Forest", description: "Viande hachée, oignons caramélisés, champignons frais, cornichon, gruyère, crudités.", price: 650, variants: [{ label: "Simple", price: 650 }, { label: "Double", price: 850 }] },
+      { name: "American Burger", description: "Double viande hachée, rôti de poulet fumé, sauce américaine, œuf, onion rings, cornichon, gruyère.", price: 900 },
+      { name: "Black Burger", description: "Double viande hachée, mozzarella panée, oignon caramélisé, crudités.", price: 950 },
     ],
   },
   {
-    name: "Pizzas",
-    description: "Pâte fine, cuisson au four.",
+    name: "Tacos",
+    description: "",
+    icon: "pepper",
+    items: [
+      { name: "Le Swiss", description: "Poulet, boursin, sauce gruyère, frites.", price: 750 },
+      { name: "Chèvre Miel", description: "Poulet, fromage de chèvre, miel, sauce cheddar, frites.", price: 750 },
+      { name: "Chicken Cheesy Curry", description: "Crispy, gouda, sauce fromagère, sauce curry, frites.", price: 700 },
+      { name: "Montagnard", description: "Gratiné au fromage fumé et au camembert, steak haché, sauce roquefort.", price: 850 },
+      { name: "Le Fameux", description: "Gratiné au pepperoni et au fromage fumé, steak haché, sauce fromagère, frites.", price: 850 },
+      { name: "L'Indien", description: "Gratiné au hot-dog, poulet mariné au curry, mozzarella, sauce fromagère, frites.", price: 850 },
+      { name: "Le Monstre", description: "3 viandes, fromage, gratiné au fromage fumé, sauce fromagère, frites, sauce au choix.", price: 950, tags: ["signature"] },
+      { name: "Tacos M", description: "1 tortilla, 1 viande au choix, sauce fromagère, fourré aux frites.", price: 650 },
+      { name: "Tacos L", description: "1 tortilla, 2 viandes au choix, sauce fromagère, frites.", price: 850 },
+      { name: "Tacos Maxi", description: "2 tortillas, 3 viandes au choix, sauce fromagère, frites.", price: 1300 },
+    ],
+  },
+  {
+    name: "Pizzas classiques",
+    description: "Base tomate.",
     icon: "pizza",
     items: [
-      {
-        name: "Margherita",
-        description: "Tomate, mozzarella, basilic.",
-        price: 800,
-        cost: 230,
-        variants: [
-          { label: "Moyenne", price: 800 },
-          { label: "Large", price: 1150 },
-        ],
-        tags: ["veggie"],
-      },
-      {
-        name: "Reine",
-        description: "Tomate, mozzarella, jambon de dinde, champignons.",
-        price: 1000,
-        cost: 300,
-        variants: [
-          { label: "Moyenne", price: 1000 },
-          { label: "Large", price: 1400 },
-        ],
-      },
-      {
-        name: "Quatre fromages",
-        description: "Mozzarella, cheddar, bleu, parmesan.",
-        price: 1200,
-        cost: 380,
-        variants: [
-          { label: "Moyenne", price: 1200 },
-          { label: "Large", price: 1650 },
-        ],
-      },
-      {
-        name: "Pizza MOODZ",
-        description: "Crème, poulet fumé, champignons, oignons caramélisés.",
-        price: 1400,
-        cost: 440,
-        variants: [
-          { label: "Moyenne", price: 1400 },
-          { label: "Large", price: 1900 },
-        ],
-        tags: ["signature"],
-      },
+      { name: "Marguerita", description: "Sauce tomate, cheddar, mozzarella, olive, basilic.", price: 450 },
+      { name: "Flame'Z", description: "Sauce tomate, merguez, cheddar, gruyère, olive, basilic.", price: 600 },
+      { name: "Meat Lover", description: "Sauce tomate, viande hachée, cheddar, mozzarella, gruyère, olive, basilic.", price: 700 },
+      { name: "3 Fromages", description: "Sauce tomate, cheddar, mozzarella, camembert, olive, basilic.", price: 650 },
+      { name: "Forest", description: "Sauce tomate, champignons frais, mozzarella, cheddar, olive, basilic.", price: 800 },
+      { name: "Veggie", description: "Sauce tomate, cheddar, mozzarella, champignons frais, maïs, tomate fraîche, oignon, poivron, olive, basilic, tomates cerises.", price: 700, tags: ["veggie"] },
+      { name: "Smoky", description: "Sauce tomate, cheddar, mozzarella, gruyère, rôti de poulet fumé, fromage fumé, olive, basilic.", price: 800 },
+      { name: "Pep'Z", description: "Sauce tomate, pepperoni, fromage fumé, mozzarella, cheddar, olive, basilic.", price: 800 },
+      { name: "Tuna", description: "Sauce tomate, thon, cheddar, gruyère, mozzarella, olive, basilic.", price: 750 },
+      { name: "Chicken'Z", description: "Sauce tomate, blanc de poulet, mozzarella, cheddar, gruyère, olive.", price: 800 },
+      { name: "Kebab'Z", description: "Sauce tomate, kebab, mozzarella, cheddar, gruyère, olive, basilic.", price: 850 },
     ],
   },
   {
-    name: "Pâtes & plats",
-    description: "Cuisinés à la commande.",
-    icon: "bowl-steam",
+    name: "Pizzas base tomate",
+    description: "En M, XL ou XXL.",
+    icon: "pizza",
     items: [
-      { name: "Pâtes Alfredo au poulet", description: "Crème, parmesan, poulet grillé.", price: 1100, cost: 360, tags: ["popular"] },
-      { name: "Penne arrabbiata", description: "Sauce tomate relevée, basilic.", price: 900, cost: 250, tags: ["spicy", "veggie"] },
-      { name: "Escalope panée", description: "Frites maison, salade, sauce au choix.", price: 1200, cost: 420 },
-      { name: "Émincé de poulet à la crème", description: "Riz basmati, champignons.", price: 1300, cost: 450 },
-      { name: "Entrecôte grillée", description: "Environ 250 g, frites, sauce poivre.", price: 2600, cost: 1250 },
+      { name: "Texan", description: "Sauce tomate, viande hachée, champignons frais, cheddar, mozzarella, olive, basilic.", price: 900, variants: [{ label: "M", price: 900 }, { label: "XL", price: 1700 }, { label: "XXL", price: 2600 }] },
+      { name: "Oriental", description: "Sauce tomate, kebab, merguez, champignons, mozzarella, cheddar, gruyère, olive.", price: 950, variants: [{ label: "M", price: 950 }, { label: "XL", price: 1800 }, { label: "XXL", price: 2700 }] },
+      { name: "Seasonz", description: "Sauce tomate, viande hachée, poulet haché, thon, cheddar, mozzarella, gruyère, olive.", price: 950, variants: [{ label: "M", price: 950 }, { label: "XL", price: 1800 }, { label: "XXL", price: 2600 }] },
+      { name: "Futura", description: "Sauce tomate, cheddar, mozzarella, poivrons, gruyère, kebab, viande hachée, oignons, maïs, olive.", price: 1000, variants: [{ label: "M", price: 1000 }, { label: "XL", price: 1850 }, { label: "XXL", price: 2800 }] },
+      { name: "Moodz-Up", description: "Sauce tomate, viande hachée, rôti de poulet fumé, thon, fromage fumé, cheddar, mozzarella, olive.", price: 1000, variants: [{ label: "M", price: 1000 }, { label: "XL", price: 1850 }, { label: "XXL", price: 2800 }], tags: ["signature"] },
+      { name: "Mexican", description: "Sauce tomate, piment, viande hachée, merguez, hot-dog, œuf, poivron, cheddar, mozzarella, gruyère, olive.", price: 950, variants: [{ label: "M", price: 950 }, { label: "XL", price: 1800 }, { label: "XXL", price: 2700 }], tags: ["spicy"] },
+      { name: "Carnivorous", description: "Sauce tomate, mozzarella, viande hachée, kebab, poulet fumé, cheddar, gruyère, olive.", price: 950, variants: [{ label: "M", price: 950 }, { label: "XL", price: 1800 }, { label: "XXL", price: 2700 }] },
+      { name: "5 Fromages", description: "Sauce tomate, cheddar, gouda, mozzarella, camembert, gruyère, olive, basilic, tomates cerises.", price: 950, variants: [{ label: "M", price: 950 }, { label: "XL", price: 1800 }, { label: "XXL", price: 2700 }] },
+      { name: "Ocean", description: "Sauce tomate, crevettes fraîches, mozzarella, cheddar, gruyère, olive, tomates cerises.", price: 1500 },
+      { name: "Mystery", description: "Surprise de la maison.", price: 1350, variants: [{ label: "M", price: 1350 }, { label: "XL", price: 2600 }, { label: "XXL", price: 3500 }] },
     ],
   },
   {
-    name: "Desserts",
-    description: "Faits maison, chaque jour.",
-    icon: "ice-cream",
+    name: "Pizzas base crème",
+    description: "En M, XL ou XXL.",
+    icon: "pizza",
     items: [
-      { name: "Tiramisu", price: 550, cost: 160, tags: ["popular"] },
-      { name: "Fondant au chocolat", description: "Cœur coulant, boule vanille.", price: 550, cost: 170, tags: ["signature"] },
-      { name: "Cheesecake", description: "Coulis fruits rouges.", price: 600, cost: 190 },
-      { name: "Coupe glacée", description: "Trois boules, chantilly, amandes.", price: 500, cost: 150 },
-      { name: "Tarte du jour", price: 450, cost: 130 },
+      { name: "White Chicken", description: "Sauce blanche, cheddar, mozzarella, gruyère, poulet, olive, basilic.", price: 850 },
+      { name: "Alfredo", description: "Sauce blanche, cheddar, mozzarella, jambon de poulet, champignons frais, gruyère, olive, basilic.", price: 1000, variants: [{ label: "M", price: 1000 }, { label: "XL", price: 1850 }, { label: "XXL", price: 2800 }] },
+      { name: "Turkish", description: "Sauce blanche, cheddar, mozzarella, poulet, viande hachée, olive, basilic, gruyère.", price: 950, variants: [{ label: "M", price: 950 }, { label: "XL", price: 1800 }, { label: "XXL", price: 2700 }] },
+      { name: "Boisée", description: "Sauce blanche, cheddar, mozzarella, poulet, fromage fumé, jambon de dinde fumé, olive, basilic.", price: 950, variants: [{ label: "M", price: 950 }, { label: "XL", price: 1800 }, { label: "XXL", price: 2700 }] },
+      { name: "Blue-Cheese", description: "Sauce blanche, gruyère, bleu roquefort, mozzarella, camembert, olive, basilic, tomates cerises.", price: 1000, variants: [{ label: "M", price: 1000 }, { label: "XL", price: 1850 }, { label: "XXL", price: 2800 }] },
+      { name: "5 Fromages Bianca", description: "Sauce blanche, cheddar, camembert, edam, mozzarella, gruyère, olive, basilic.", price: 1000, variants: [{ label: "M", price: 1000 }, { label: "XL", price: 1850 }, { label: "XXL", price: 2800 }] },
+      { name: "Sea Fruits", description: "Sauce blanche, gruyère, cheddar, crevettes, calamar, sépia, mozzarella, citron.", price: 1650 },
+      { name: "Norwaygian", description: "Sauce blanche, cheddar, mozzarella, gruyère, saumon fumé, olives.", price: 1300 },
+    ],
+  },
+  {
+    name: "Plats",
+    description: "Viandes blanches et viandes rouges.",
+    icon: "fork-knife",
+    items: [
+      { name: "Blanc de poulet haché farci aux 3 fromages", price: 1250 },
+      { name: "Escalope au fromage grillé", price: 1000 },
+      { name: "Escalope panée", price: 1150 },
+      { name: "Escalope au curry", price: 1250 },
+      { name: "Émincé de poulet à la crème et aux champignons", price: 1200 },
+      { name: "Cordon bleu", price: 1400 },
+      { name: "Escalope tandoori", price: 1250 },
+      { name: "Viande fourrée mozza", price: 1550 },
+      { name: "Viande hachée grillée", price: 1100 },
+      { name: "Viande farcie aux 3 fromages", price: 1350 },
+      { name: "Steak de veau sauce poivre", price: 1400 },
+      { name: "Entrecôte grillée à la plancha", price: 1400 },
+      { name: "Merguez", price: 1250 },
+      { name: "Foie de veau grillé", price: 1600 },
+    ],
+  },
+  {
+    name: "Petits snacks",
+    description: "",
+    icon: "bowl-food",
+    items: [
+      { name: "Tenders", price: 500, variants: [{ label: "4 pièces", price: 500 }, { label: "7 pièces", price: 800 }, { label: "10 pièces", price: 900 }] },
+      { name: "Hot wings", price: 500, variants: [{ label: "4 pièces", price: 500 }, { label: "7 pièces", price: 800 }, { label: "10 pièces", price: 900 }], tags: ["spicy"] },
+      { name: "The Hot Mix", description: "4 tenders et 4 hot wings.", price: 800 },
+      { name: "Croque poulet", price: 400 },
+      { name: "Croque viande", price: 450 },
+      { name: "Croque au thon", price: 400 },
+      { name: "Croque aux fromages", price: 450 },
+      { name: "Bowl viande", price: 850 },
+      { name: "Bowl crousty", price: 750 },
+    ],
+  },
+  {
+    name: "Menu Kids",
+    description: "Boisson à paillettes et surprise incluses.",
+    icon: "popsicle",
+    items: [
+      { name: "Menu Kids pizza", description: "Pizza mini, boisson à paillettes, surprise.", price: 500 },
+      { name: "Menu Kids burger", description: "Burger, frites, boisson à paillettes, surprise.", price: 500 },
+    ],
+  },
+  {
+    name: "Suppléments",
+    description: "À ajouter à votre commande.",
+    icon: "sparkle",
+    items: [
+      { name: "Supplément fromage", price: 200 },
+      { name: "Supplément viande", price: 200 },
+      { name: "Frites", price: 150 },
+      { name: "Frites au fromage", price: 250 },
+      { name: "Supplément légumes", price: 100 },
+      { name: "Supplément œuf", price: 50 },
+      { name: "Gratinage simple", description: "Pour les tacos.", price: 150 },
+      { name: "Gratinage fumé ou camembert", description: "Pour les tacos.", price: 250 },
+    ],
+  },
+  {
+    name: "Boissons",
+    description: "",
+    icon: "drop",
+    items: [
+      { name: "Eau minérale", price: 30, variants: [{ label: "0,5 L", price: 30 }, { label: "1,5 L", price: 50 }] },
+      { name: "Soda", price: 100, variants: [{ label: "Petit modèle", price: 100 }, { label: "Grand modèle", price: 150 }] },
     ],
   },
 ];
@@ -212,7 +240,7 @@ export async function insertMenu(db: Pick<Database, "query">, menu: SeedCategory
     for (const item of category.items) {
       await db.query(
         `insert into menu_items (category_id, name, description, price, cost, variants, tags, position)
-         values ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8)`,
+         values ($1, $2, $3, $4, $5, $6::text::jsonb, $7::text::jsonb, $8)`,
         [
           row.id,
           item.name,
@@ -231,18 +259,18 @@ export async function insertMenu(db: Pick<Database, "query">, menu: SeedCategory
 export async function seedDatabase(db: Database) {
   // Paramètres du site
   await db.query(
-    `insert into settings (id, data) values (1, $1::jsonb) on conflict (id) do nothing`,
+    `insert into settings (id, data) values (1, $1::text::jsonb) on conflict (id) do nothing`,
     [JSON.stringify(DEFAULT_SETTINGS)],
   );
 
-  // Carte d'exemple, une seule fois
+  // Carte de départ, une seule fois
   if (!(await isDone(db, "seed_menu_v1"))) {
     await db.transaction(async (tx) => {
       await tx.query(`select pg_advisory_xact_lock(4242002)`);
       const again = await tx.query(`select 1 from _migrations where id = 'seed_menu_v1'`);
       if (again.length > 0) return;
       const [{ count }] = await tx.query<{ count: number }>(`select count(*)::int as count from categories`);
-      if (count === 0) await insertMenu(tx, SAMPLE_MENU);
+      if (count === 0) await insertMenu(tx, INITIAL_MENU);
       await tx.query(`insert into _migrations (id) values ('seed_menu_v1')`);
     });
   }

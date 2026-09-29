@@ -36,7 +36,7 @@ function ScrubText({ text }: { text: string }) {
 }
 
 export function Experience({ title, text, words }: { title: string; text: string; words: string[] }) {
-  const band = words.length ? words : ["Café", "Brunch", "Burgers", "Pizzas", "Desserts"];
+  const band = words.length ? words : ["Pizzas", "Burgers", "Tacos", "Sandwichs", "Plats"];
   const loop = [...band, ...band];
 
   return (

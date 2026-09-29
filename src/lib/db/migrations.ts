@@ -116,6 +116,16 @@ alter table admins enable row level security;
 alter table rate_limits enable row level security;
 `,
   },
+  {
+    // Avec postgres.js, un paramètre `$1::jsonb` reçu sous forme de texte JSON était ré-encodé :
+    // la colonne contenait une chaîne JSON au lieu d'un objet. On remet ces valeurs à plat.
+    id: "002_jsonb_normalize",
+    sql: `
+update settings set data = (data #>> '{}')::jsonb where jsonb_typeof(data) = 'string';
+update menu_items set variants = (variants #>> '{}')::jsonb where jsonb_typeof(variants) = 'string';
+update menu_items set tags = (tags #>> '{}')::jsonb where jsonb_typeof(tags) = 'string';
+`,
+  },
 ];
 
 export async function runMigrations(db: Database) {

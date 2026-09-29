@@ -57,11 +57,12 @@ const everyday = (open: string, close: string): DayHours => ({ closed: false, op
 export const DEFAULT_SETTINGS: SiteSettings = {
   restaurantName: "MOODZ",
   tagline: "Café · Restaurant",
-  heroSubtitle: "Café, brunch et cuisine généreuse au cœur de Gambetta, à Oran.",
+  heroSubtitle: "Pizzas, burgers, tacos, sandwichs et plats généreux, au cœur de Gambetta à Oran.",
   aboutTitle: "Un lieu pour chaque humeur",
   aboutText:
-    "MOODZ, c'est le rendez-vous de Gambetta. Un café le matin, un déjeuner entre collègues, un dîner qui se prolonge. " +
-    "Une carte courte et soignée, un service attentif et une ambiance feutrée, du premier espresso au dernier dessert.",
+    "MOODZ, c'est le rendez-vous gourmand de Gambetta. Pizzas en trois tailles, burgers simples ou doubles, " +
+    "tacos gratinés, sandwichs au pain artisanal et plats de viande : une carte généreuse pour chaque humeur. " +
+    "Feed your mood.",
   address: "Gambetta, Oran, Algérie",
   mapsUrl: "https://www.google.com/maps/search/?api=1&query=MOODZ+Gambetta+Oran",
   phone: "",
@@ -100,7 +101,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
       { label: "Internet et divers", amount: 15000 },
     ],
   },
-  menuIsSample: true,
+  menuIsSample: false,
 };
 
 export const ORDER_TYPES = ["pickup", "delivery", "dine_in"] as const;

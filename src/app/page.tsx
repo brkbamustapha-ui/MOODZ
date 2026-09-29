@@ -21,7 +21,7 @@ export default async function Home() {
     address: { "@type": "PostalAddress", streetAddress: settings.address, addressLocality: "Oran", addressCountry: "DZ" },
     telephone: settings.phone || undefined,
     url: siteUrl,
-    servesCuisine: ["Café", "Brunch", "Burgers", "Pizzas", "Desserts"],
+    servesCuisine: ["Pizzas", "Burgers", "Tacos", "Sandwichs", "Grillades"],
     priceRange: "DA",
     sameAs: [settings.instagram, settings.tiktok].filter(Boolean),
     hasMenu: {

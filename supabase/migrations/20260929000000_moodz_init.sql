@@ -116,3 +116,10 @@ alter table admins enable row level security;
 alter table rate_limits enable row level security;
 
 insert into _migrations (id) values ('001_init') on conflict (id) do nothing;
+
+-- 002_jsonb_normalize
+update settings set data = (data #>> '{}')::jsonb where jsonb_typeof(data) = 'string';
+update menu_items set variants = (variants #>> '{}')::jsonb where jsonb_typeof(variants) = 'string';
+update menu_items set tags = (tags #>> '{}')::jsonb where jsonb_typeof(tags) = 'string';
+
+insert into _migrations (id) values ('002_jsonb_normalize') on conflict (id) do nothing;

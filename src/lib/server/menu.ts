@@ -173,7 +173,7 @@ export async function createItem(input: ItemInput): Promise<MenuItem> {
   const db = await getDb();
   const [row] = await db.query<ItemRow>(
     `insert into menu_items (category_id, name, description, price, cost, variants, tags, is_available, is_visible, position)
-     values ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8, $9,
+     values ($1, $2, $3, $4, $5, $6::text::jsonb, $7::text::jsonb, $8, $9,
        coalesce((select max(position) + 1 from menu_items where category_id = $1), 0))
      returning ${ITEM_COLUMNS}`,
     [
@@ -200,8 +200,8 @@ export async function updateItem(id: number, input: Partial<ItemInput>): Promise
        description = coalesce($4, description),
        price = coalesce($5, price),
        cost = case when $6::boolean then $7::integer else cost end,
-       variants = coalesce($8::jsonb, variants),
-       tags = coalesce($9::jsonb, tags),
+       variants = coalesce($8::text::jsonb, variants),
+       tags = coalesce($9::text::jsonb, tags),
        is_available = coalesce($10, is_available),
        is_visible = coalesce($11, is_visible),
        updated_at = now()
@@ -273,7 +273,7 @@ export async function importMenu(categories: ImportedCategory[], mode: "append" 
       for (const [index, item] of category.items.entries()) {
         await tx.query(
           `insert into menu_items (category_id, name, description, price, variants, position)
-           values ($1, $2, $3, $4, $5::jsonb, $6)`,
+           values ($1, $2, $3, $4, $5::text::jsonb, $6)`,
           [row.id, item.name, item.description, item.price, JSON.stringify(item.variants), index],
         );
         itemCount++;

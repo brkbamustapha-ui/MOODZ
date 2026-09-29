@@ -32,7 +32,7 @@ export async function getSettings(): Promise<SiteSettings> {
 export async function saveSettings(next: SiteSettings): Promise<SiteSettings> {
   const db = await getDb();
   await db.query(
-    `insert into settings (id, data, updated_at) values (1, $1::jsonb, now())
+    `insert into settings (id, data, updated_at) values (1, $1::text::jsonb, now())
      on conflict (id) do update set data = excluded.data, updated_at = now()`,
     [JSON.stringify(next)],
   );
