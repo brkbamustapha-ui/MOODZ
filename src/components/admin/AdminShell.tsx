@@ -16,7 +16,7 @@ import { MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { LogoMark } from "@/components/brand/LogoMark";
+import { Badge } from "@/components/brand/Badge";
 import { api } from "@/lib/admin-api";
 import { PulseProvider, usePulse } from "./PulseContext";
 import { ToastProvider } from "./ui";
@@ -45,9 +45,9 @@ function Sidebar({ username }: { username: string }) {
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-[260px] flex-col p-4 lg:flex">
       <div className="glass flex h-full flex-col rounded-[1.75rem] px-4 py-6">
-        <Link href="/admin" className="px-3">
-          <LogoMark className="h-6 w-auto" />
-          <span className="mt-2 block text-[10px] uppercase tracking-[0.34em] text-text-3">Espace gérant</span>
+        <Link href="/admin" className="flex items-center gap-3 px-2">
+          <Badge className="h-12 w-12 shrink-0" compact />
+          <span className="text-[10px] uppercase leading-relaxed tracking-[0.3em] text-text-3">Espace gérant</span>
         </Link>
 
         <nav className="mt-10 flex flex-col gap-1" aria-label="Navigation du tableau de bord">
@@ -72,7 +72,7 @@ function Sidebar({ username }: { username: string }) {
                 <IconCmp size={20} weight={active ? "regular" : "light"} className={`relative ${active ? "text-gold-200" : ""}`} />
                 <span className="relative">{item.label}</span>
                 {item.badge === "pending" && pending > 0 && (
-                  <span className="tabular relative ml-auto flex h-6 min-w-6 items-center justify-center rounded-full bg-gold-300 px-1.5 text-[12px] font-semibold text-[#1b1407]">
+                  <span className="tabular relative ml-auto flex h-6 min-w-6 items-center justify-center rounded-full bg-gold-300 px-1.5 text-[12px] font-semibold text-[var(--on-accent)]">
                     {pending}
                   </span>
                 )}
@@ -114,9 +114,9 @@ function MobileBar() {
   return (
     <>
       <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 lg:hidden">
-        <div className="glass flex h-14 w-full items-center justify-between rounded-full pl-5 pr-2">
+        <div className="glass flex h-14 w-full items-center justify-between rounded-full pl-1.5 pr-2">
           <Link href="/admin" aria-label="Aperçu">
-            <LogoMark className="h-[15px] w-auto" />
+            <Badge className="h-11 w-11" compact />
           </Link>
           <Link href="/admin/reglages" className="btn-ghost flex h-10 w-10 items-center justify-center rounded-full" aria-label="Réglages">
             <GearSixIcon size={18} weight="light" />
@@ -142,7 +142,7 @@ function MobileBar() {
               <span className="relative">
                 <IconCmp size={21} weight={active ? "regular" : "light"} className={active ? "text-gold-200" : "text-text-2"} />
                 {item.badge === "pending" && pending > 0 && (
-                  <span className="tabular absolute -right-2.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold-300 px-1 text-[10px] font-bold text-[#1b1407]">
+                  <span className="tabular absolute -right-2.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold-300 px-1 text-[10px] font-bold text-[var(--on-accent)]">
                     {pending}
                   </span>
                 )}

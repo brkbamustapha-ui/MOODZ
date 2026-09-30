@@ -90,7 +90,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     estimatedMinutes: 30,
     notice: "Chaque commande est confirmée manuellement par notre équipe, souvent par un appel rapide.",
   },
-  theme: { accent: "#D8B46A" },
+  // Olive du logo MOODZ « Feed your mood »
+  theme: { accent: "#738C1F" },
   logoDataUrl: null,
   finance: {
     foodCostPct: 32,

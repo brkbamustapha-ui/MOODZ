@@ -220,7 +220,7 @@ export function CartDrawer({ settings, status }: { settings: PublicSettings; sta
             onClick={closeDrawer}
           />
           <motion.aside
-            className="absolute bottom-0 right-0 flex h-[92dvh] w-full flex-col overflow-hidden rounded-t-[2rem] bg-[linear-gradient(180deg,var(--surface-2),var(--bg-2))] shadow-[inset_0_1px_0_rgb(255_240_210/0.08),0_-30px_80px_-20px_rgb(0_0_0/0.8)] ring-1 ring-line sm:top-0 sm:h-full sm:max-w-[460px] sm:rounded-none sm:rounded-l-[2rem]"
+            className="absolute bottom-0 right-0 flex h-[92dvh] w-full flex-col overflow-hidden rounded-t-[2rem] bg-[linear-gradient(180deg,var(--surface-2),var(--bg-2))] shadow-[inset_0_1px_0_rgb(236_242_212/0.08),0_-30px_80px_-20px_rgb(0_0_0/0.8)] ring-1 ring-line sm:top-0 sm:h-full sm:max-w-[460px] sm:rounded-none sm:rounded-l-[2rem]"
             initial={hiddenPos}
             animate={{ x: 0, y: 0 }}
             exit={hiddenPos}

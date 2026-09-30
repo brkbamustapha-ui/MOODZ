@@ -51,7 +51,7 @@ function Tooltip({ tip }: { tip: Tip }) {
   if (!tip) return null;
   return (
     <div
-      className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-xl bg-[rgb(12_11_9/0.94)] px-3 py-2 text-center shadow-[0_12px_30px_-10px_rgb(0_0_0/0.8)] ring-1 ring-line-strong"
+      className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-xl bg-[rgb(14_19_9/0.94)] px-3 py-2 text-center shadow-[0_12px_30px_-10px_rgb(0_0_0/0.8)] ring-1 ring-line-strong"
       style={{ left: tip.x, top: tip.y - 10 }}
       role="status"
     >

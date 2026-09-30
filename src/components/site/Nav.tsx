@@ -55,7 +55,7 @@ export function Nav({ settings }: { settings: PublicSettings }) {
       >
         <nav
           aria-label="Navigation principale"
-          className={`glass flex h-14 w-full max-w-[1100px] items-center justify-between gap-3 rounded-full pl-5 pr-2 transition-[background-color] duration-700 sm:h-16 sm:pl-7 ${
+          className={`glass flex h-14 w-full max-w-[1100px] items-center justify-between gap-3 rounded-full pl-1.5 pr-2 transition-[background-color] duration-700 sm:h-16 sm:pl-2 ${
             scrolled ? "" : "bg-transparent!"
           }`}
         >
@@ -65,10 +65,15 @@ export function Nav({ settings }: { settings: PublicSettings }) {
               e.preventDefault();
               go("top");
             }}
-            className="flex items-center"
+            className="flex items-center gap-3 rounded-full"
             aria-label={`${settings.restaurantName}, retour en haut`}
           >
-            <BrandLogo src={settings.logoDataUrl} alt={settings.restaurantName} className="h-[15px] w-auto sm:h-[17px]" imageClassName="h-9 w-auto object-contain" />
+            <BrandLogo
+              src={settings.logoDataUrl}
+              alt={settings.restaurantName}
+              className="h-11 w-11 drop-shadow-[0_6px_14px_rgb(0_0_0/0.35)] sm:h-12 sm:w-12"
+              imageClassName="h-10 w-auto object-contain pl-2"
+            />
           </a>
 
           <ul className="hidden items-center gap-1 lg:flex">

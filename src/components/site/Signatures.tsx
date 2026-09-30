@@ -21,7 +21,7 @@ const LAYOUTS: Record<number, string[]> = {
 
 const SURFACES = [
   "bg-[radial-gradient(120%_90%_at_100%_0%,color-mix(in_oklab,var(--accent)_22%,transparent),transparent_60%),linear-gradient(180deg,var(--surface-2),var(--surface))]",
-  "bg-[repeating-linear-gradient(135deg,rgb(255_240_210/0.035)_0_1px,transparent_1px_14px),linear-gradient(180deg,var(--surface-2),var(--surface))]",
+  "bg-[repeating-linear-gradient(135deg,rgb(236_242_212/0.035)_0_1px,transparent_1px_14px),linear-gradient(180deg,var(--surface-2),var(--surface))]",
   "bg-[radial-gradient(90%_70%_at_0%_100%,color-mix(in_oklab,var(--accent)_18%,transparent),transparent_65%),linear-gradient(180deg,var(--surface-3),var(--surface))]",
   "bg-[conic-gradient(from_210deg_at_110%_-10%,color-mix(in_oklab,var(--accent)_20%,transparent),transparent_35%),linear-gradient(180deg,var(--surface-2),var(--bg-2))]",
 ];
@@ -69,7 +69,7 @@ export function Signatures({ items }: { items: PublicMenuItem[] }) {
                       {hero && (
                         <>
                           <LiquidGold className="rounded-[inherit] opacity-80" />
-                          <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,transparent_20%,rgb(11_10_9/0.55)_55%,rgb(11_10_9/0.92))]" />
+                          <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,transparent_20%,rgb(12_16_7/0.55)_55%,rgb(12_16_7/0.92))]" />
                         </>
                       )}
                       <div className="relative [transform:translateZ(40px)]">

@@ -4,7 +4,7 @@ import { ArrowDownRightIcon, MapPinIcon } from "@phosphor-icons/react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import dynamic from "next/dynamic";
 import { Component, useEffect, useRef, useState, type ReactNode } from "react";
-import { LogoMark } from "@/components/brand/LogoMark";
+import { Badge } from "@/components/brand/Badge";
 import { useClientValue, useMediaQuery } from "@/lib/hooks/useMediaQuery";
 import type { OpenStatus } from "@/lib/hours";
 import type { PublicSettings } from "@/lib/site-config";
@@ -48,7 +48,7 @@ function FlatLogo({ url }: { url: string | null }) {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={url} alt="" className="max-h-[50%] w-[min(60vw,420px)] object-contain" />
       ) : (
-        <LogoMark className="w-[min(78vw,720px)]" />
+        <Badge className="w-[min(64vw,420px)]" />
       )}
     </div>
   );

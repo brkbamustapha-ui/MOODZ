@@ -123,3 +123,9 @@ update menu_items set variants = (variants #>> '{}')::jsonb where jsonb_typeof(v
 update menu_items set tags = (tags #>> '{}')::jsonb where jsonb_typeof(tags) = 'string';
 
 insert into _migrations (id) values ('002_jsonb_normalize') on conflict (id) do nothing;
+
+-- 003_accent_olive
+update settings set data = jsonb_set(data, '{theme,accent}', '"#738C1F"'::jsonb)
+where jsonb_typeof(data) = 'object' and upper(data #>> '{theme,accent}') = '#D8B46A';
+
+insert into _migrations (id) values ('003_accent_olive') on conflict (id) do nothing;

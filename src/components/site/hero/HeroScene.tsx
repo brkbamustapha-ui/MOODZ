@@ -5,9 +5,15 @@ import type { MotionValue } from "motion/react";
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type ReactNode } from "react";
 import * as THREE from "three";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
-import { LOGO_GLYPHS } from "@/lib/brand/logo-glyphs";
-
-const UNIT = 1 / 40; // unités du tracé -> unités 3D
+import {
+  BADGE_BRANCH,
+  BADGE_DISC_R,
+  BADGE_MOTTO,
+  BADGE_RING,
+  BADGE_SIZE,
+  BADGE_STARS,
+  BADGE_TITLE,
+} from "@/lib/brand/badge";
 
 /**
  * Profil de rendu. Écrans tactiles et petits processeurs : scène allégée (matériaux standard,
@@ -47,206 +53,238 @@ function lookTarget(time: number, state: RootState, touch: boolean, scroll: Moti
 /** Rend la main au navigateur entre deux étapes coûteuses (défilement et interactions restent fluides). */
 const yieldToMain = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
-type Glyph = { geometry: THREE.ExtrudeGeometry; center: THREE.Vector3 };
-type Glyphs = { glyphs: Glyph[]; width: number };
+/* ------------------------------------------------------------------ */
+/* Badge MOODZ en relief : pièce émaillée crème à bord bronze, disque  */
+/* olive, anneau, lettres et étoiles olive, branche crème en saillie.  */
+/* Repère : unités du badge (carré de 1000), converties à l'échelle.   */
+/* ------------------------------------------------------------------ */
 
-const disposeGlyphs = (glyphs: Glyph[]) => new Set(glyphs.map((g) => g.geometry)).forEach((geometry) => geometry.dispose());
+const C = BADGE_SIZE / 2;
+const BASE_R = 486;
 
-/**
- * Extrusion des lettres, une par tâche : d'un seul bloc, elle figeait la page ~150 ms sur mobile.
- * Les lettres répétées (les deux O) partagent la même géométrie.
- */
-async function buildGlyphs(lite: boolean, cancelled: () => boolean): Promise<Glyphs | null> {
-  const loader = new SVGLoader();
-  const byChar = new Map<string, { geometry: THREE.ExtrudeGeometry; center: THREE.Vector3; x: number }>();
-  const raw: Glyph[] = [];
-  for (const g of LOGO_GLYPHS) {
-    const twin = byChar.get(g.char);
-    if (twin) {
-      raw.push({ geometry: twin.geometry, center: twin.center.clone().setX(twin.center.x + (g.x - twin.x) * UNIT) });
-      continue;
-    }
-    await yieldToMain();
-    if (cancelled()) {
-      disposeGlyphs(raw);
-      return null;
-    }
-    const data = loader.parse(`<svg xmlns="http://www.w3.org/2000/svg"><path d="${g.d}"/></svg>`);
-    const shapes = data.paths.flatMap((p) => p.toShapes());
-    const geometry = new THREE.ExtrudeGeometry(shapes, {
-      depth: 11,
-      bevelEnabled: true,
-      bevelThickness: 1.8,
-      bevelSize: 1.05,
-      bevelOffset: 0,
-      bevelSegments: lite ? 3 : 5,
-      curveSegments: lite ? 7 : 12,
-    });
-    geometry.scale(UNIT, UNIT, UNIT);
-    // SVG : axe Y vers le bas -> rotation plutôt qu'une échelle négative (garde les normales correctes)
-    geometry.rotateX(Math.PI);
-    geometry.computeBoundingBox();
-    const center = new THREE.Vector3();
-    geometry.boundingBox!.getCenter(center);
-    geometry.translate(-center.x, -center.y, -center.z);
-    byChar.set(g.char, { geometry, center: center.clone(), x: g.x });
-    raw.push({ geometry, center });
-  }
-  const minX = Math.min(...raw.map((g) => g.center.x - (g.geometry.boundingBox!.max.x - g.geometry.boundingBox!.min.x) / 2));
-  const maxX = Math.max(...raw.map((g) => g.center.x + (g.geometry.boundingBox!.max.x - g.geometry.boundingBox!.min.x) / 2));
-  const midX = (minX + maxX) / 2;
-  const midY = raw.reduce((s, g) => s + g.center.y, 0) / raw.length;
-  for (const g of raw) {
-    g.center.x -= midX;
-    g.center.y -= midY;
-    g.center.z = 0;
-  }
-  return { glyphs: raw, width: maxX - minX };
+type BadgeMaterial = "base" | "cream" | "olive";
+type BadgePart = {
+  geometry: THREE.ExtrudeGeometry;
+  material: BadgeMaterial;
+  /** Position finale en z (unités du badge). */
+  z: number;
+  /** Profondeur de départ sous la surface : à l'entrée, l'élément émerge de la pièce. */
+  lift: number;
+  /** Retard d'entrée (s). */
+  delay: number;
+};
+
+const disposeParts = (parts: BadgePart[]) => parts.forEach((p) => p.geometry.dispose());
+
+function circleShape(r: number) {
+  const shape = new THREE.Shape();
+  shape.absarc(0, 0, r, 0, Math.PI * 2, false);
+  return shape;
 }
 
-/** Lettres du logotype, prêtes de façon asynchrone (null tant qu'elles se préparent ou si inutiles). */
-function useGlyphs(lite: boolean, enabled: boolean): Glyphs | null {
-  const [glyphs, setGlyphs] = useState<Glyphs | null>(null);
+function ringShape(outer: number, inner: number) {
+  const shape = circleShape(outer);
+  const hole = new THREE.Path();
+  hole.absarc(0, 0, inner, 0, Math.PI * 2, true);
+  shape.holes.push(hole);
+  return shape;
+}
+
+/**
+ * Construction du badge, par étapes séparées d'une tâche à l'autre : d'un seul bloc, l'extrusion
+ * figeait la page sur mobile. Chaque étape rend la main au navigateur.
+ */
+async function buildBadge(lite: boolean, cancelled: () => boolean): Promise<BadgePart[] | null> {
+  const loader = new SVGLoader();
+  const parts: BadgePart[] = [];
+  const round = lite ? 36 : 56; // facettes des cercles (le double pour un tour complet)
+  const bevelSegments = lite ? 2 : 3;
+
+  /** Extrusion ; `svg` : tracé du badge (y vers le bas, origine en haut à gauche). */
+  const extrude = (shapes: THREE.Shape | THREE.Shape[], depth: number, bevel: number, curveSegments: number, svg: boolean) => {
+    const geometry = new THREE.ExtrudeGeometry(shapes, {
+      depth,
+      bevelEnabled: bevel > 0,
+      bevelThickness: bevel,
+      bevelSize: bevel * 0.8,
+      bevelOffset: 0,
+      bevelSegments,
+      curveSegments,
+    });
+    if (svg) geometry.translate(-C, -C, 0);
+    // Rotation plutôt qu'une échelle négative (garde les normales) : face avant vers la caméra
+    geometry.rotateX(Math.PI);
+    geometry.computeBoundingBox();
+    return geometry;
+  };
+  const svgShapes = (d: string) =>
+    loader.parse(`<svg xmlns="http://www.w3.org/2000/svg"><path d="${d}"/></svg>`).paths.flatMap((p) => p.toShapes());
+
+  /** Pose une pièce en relief : son dos s'enfonce d'une unité sous `surface`. */
+  const add = (geometry: THREE.ExtrudeGeometry, material: BadgeMaterial, surface: number, delay: number) => {
+    const box = geometry.boundingBox!;
+    const thickness = box.max.z - box.min.z;
+    parts.push({ geometry, material, z: surface - box.min.z - 1, lift: thickness + 2, delay });
+    return surface - 1 + thickness;
+  };
+
+  let discTop = 0;
+  const steps: Array<() => void> = [
+    () => {
+      // Pièce : face avant à z = 0
+      const base = extrude(circleShape(BASE_R), 34, 12, round, false);
+      parts.push({ geometry: base, material: "base", z: -base.boundingBox!.max.z, lift: 0, delay: 0 });
+      discTop = add(extrude(circleShape(BADGE_DISC_R), 9, 3, round, false), "olive", 0, 0.35);
+      const ring = BADGE_RING.width * 0.65;
+      add(extrude(ringShape(BADGE_RING.r + ring, BADGE_RING.r - ring), 6, 2, round, false), "olive", 0, 0.5);
+    },
+    () => BADGE_TITLE.forEach((g, i) => add(extrude(svgShapes(g.d), 6, 2, lite ? 5 : 8, true), "olive", 0, 0.95 + i * 0.05)),
+    () => BADGE_MOTTO.forEach((g, i) => add(extrude(svgShapes(g.d), 6, 2, lite ? 5 : 8, true), "olive", 0, 1.2 + i * 0.035)),
+    () => {
+      BADGE_BRANCH.forEach((b, i) => add(extrude(svgShapes(b.d), 6, 2.5, lite ? 6 : 10, true), "cream", discTop, 0.7 + i * 0.06));
+      BADGE_STARS.forEach((d, i) => add(extrude(svgShapes(d), 6, 2, 2, true), "olive", 0, 1.75 + i * 0.1));
+    },
+  ];
+  for (const step of steps) {
+    await yieldToMain();
+    if (cancelled()) {
+      disposeParts(parts);
+      return null;
+    }
+    step();
+  }
+  return parts;
+}
+
+/** Pièces du badge, prêtes de façon asynchrone (null tant qu'elles se préparent ou si inutiles). */
+function useBadgeParts(lite: boolean, enabled: boolean): BadgePart[] | null {
+  const [parts, setParts] = useState<BadgePart[] | null>(null);
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
-    let built: Glyphs | null = null;
-    buildGlyphs(lite, () => cancelled).then((result) => {
+    let built: BadgePart[] | null = null;
+    buildBadge(lite, () => cancelled).then((result) => {
       if (!result) return;
       if (cancelled) {
-        disposeGlyphs(result.glyphs);
+        disposeParts(result);
         return;
       }
       built = result;
-      setGlyphs(result);
+      setParts(result);
     });
     return () => {
       cancelled = true;
-      if (built) disposeGlyphs(built.glyphs);
+      if (built) disposeParts(built);
     };
   }, [lite, enabled]);
-  return enabled ? glyphs : null;
+  return enabled ? parts : null;
 }
 
 const easeOutExpo = (t: number) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t));
 
-function Letter({
-  glyph,
-  index,
-  faceMaterial,
-  sideMaterial,
-  animate,
-}: {
-  glyph: Glyph;
-  index: number;
-  faceMaterial: THREE.Material;
-  sideMaterial: THREE.Material;
-  animate: boolean;
-}) {
+const CAMERA_Z = 11;
+
+/**
+ * Place du badge dans la vue (unités 3D, plan z = 0) : 80 % de la largeur sur téléphone, borné
+ * par la hauteur sur grand écran, et remonté pour laisser la place aux textes du bas du hero.
+ */
+function useBadgeLayout() {
+  const viewport = useThree((state) => state.viewport);
+  const diameter = Math.min(viewport.width * (viewport.aspect < 1 ? 0.8 : 0.5), viewport.height * 0.52);
+  return { diameter, lift: viewport.height * 0.075, wide: viewport.aspect >= 1 };
+}
+
+/** Un élément du badge : à l'entrée, il sort de la pièce (de `lift` sous la surface). */
+function Piece({ part, material, animate }: { part: BadgePart; material: THREE.Material | THREE.Material[]; animate: boolean }) {
   const ref = useRef<THREE.Mesh>(null);
   const start = useRef<number | null>(null);
-
   useSceneFrame((t) => {
     const mesh = ref.current;
-    if (!mesh) return;
+    if (!mesh || !part.lift) return;
     if (!animate) {
-      mesh.position.copy(glyph.center);
-      mesh.rotation.set(0, 0, 0);
+      mesh.position.z = part.z;
       return;
     }
     start.current ??= t;
-    const local = Math.max(0, t - start.current - 0.25 - index * 0.13);
-    const p = easeOutExpo(Math.min(1, local / 1.6));
-    mesh.position.set(
-      glyph.center.x,
-      glyph.center.y + (1 - p) * -1.6 + Math.sin(t * 0.9 + index * 0.8) * 0.035 * p,
-      (1 - p) * -2.5,
-    );
-    mesh.rotation.set((1 - p) * -1.4, Math.sin(t * 0.6 + index) * 0.05 * p, 0);
-    mesh.scale.setScalar(0.6 + 0.4 * p);
+    const p = easeOutExpo(Math.min(1, Math.max(0, t - start.current - part.delay) / 0.9));
+    mesh.position.z = part.z - (1 - p) * part.lift;
   });
-
-  return (
-    <mesh
-      ref={ref}
-      geometry={glyph.geometry}
-      material={[faceMaterial, sideMaterial]}
-      position={glyph.center}
-      castShadow={false}
-      receiveShadow={false}
-    />
-  );
+  return <mesh ref={ref} geometry={part.geometry} material={material} position={[0, 0, part.lift && animate ? part.z - part.lift : part.z]} />;
 }
 
-function Wordmark({
-  letters,
-  accent,
+function BadgeModel({
+  parts,
   animate,
   profile,
   scroll,
 }: {
-  letters: Glyphs;
-  accent: string;
+  parts: BadgePart[];
   animate: boolean;
   profile: Profile;
   scroll: MotionValue<number>;
 }) {
   const group = useRef<THREE.Group>(null);
-  const viewport = useThree((state) => state.viewport);
-  const { glyphs, width } = letters;
+  const start = useRef<number | null>(null);
+  const { diameter, lift } = useBadgeLayout();
 
-  const [faceMaterial, sideMaterial] = useMemo(() => {
-    const color = new THREE.Color(accent);
-    // Vernis (clearcoat) réservé aux ordinateurs : c'est le shader le plus lourd de la scène
-    const face = profile.lite
-      ? new THREE.MeshStandardMaterial({ color, metalness: 1, roughness: 0.2, envMapIntensity: 1.45 })
-      : new THREE.MeshPhysicalMaterial({
-          color,
-          metalness: 1,
-          roughness: 0.2,
-          clearcoat: 0.5,
-          clearcoatRoughness: 0.18,
-          envMapIntensity: 1.45,
-        });
-    const side = new THREE.MeshStandardMaterial({
-      color: color.clone().multiplyScalar(0.82),
-      metalness: 1,
-      roughness: 0.34,
-      envMapIntensity: 1.15,
-    });
-    return [face, side];
-  }, [accent, profile.lite]);
+  const materials = useMemo(() => {
+    const cream = new THREE.Color("#f2f0df");
+    const olive = new THREE.Color("#6f891d");
+    // Émail verni (clearcoat) sur ordinateur ; matériau standard, plus léger, sur mobile
+    const enamel = (color: THREE.Color, roughness: number) =>
+      profile.lite
+        ? new THREE.MeshStandardMaterial({ color, roughness, metalness: 0.05, envMapIntensity: 1.1 })
+        : new THREE.MeshPhysicalMaterial({ color, roughness, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.12, envMapIntensity: 1.05 });
+    const creamEnamel = enamel(cream, 0.38);
+    const oliveEnamel = enamel(olive, 0.3);
+    const bronze = new THREE.MeshStandardMaterial({ color: "#b89f58", metalness: 1, roughness: 0.3, envMapIntensity: 1.6 });
+    return { creamEnamel, oliveEnamel, bronze };
+  }, [profile.lite]);
   useEffect(
     () => () => {
-      faceMaterial.dispose();
-      sideMaterial.dispose();
+      materials.creamEnamel.dispose();
+      materials.oliveEnamel.dispose();
+      materials.bronze.dispose();
     },
-    [faceMaterial, sideMaterial],
+    [materials],
   );
 
-  const scale = Math.min(1, (viewport.width * (viewport.aspect < 1 ? 0.9 : 0.68)) / width);
+  const scale = diameter / (BASE_R * 2);
 
   useSceneFrame((t, delta, state) => {
     const g = group.current;
-    if (!g || !animate) return;
+    if (!g) return;
+    if (!animate) {
+      g.rotation.set(0, 0, 0);
+      g.position.y = lift;
+      return;
+    }
+    start.current ??= t;
+    // Entrée : la pièce pivote depuis la tranche et grandit légèrement
+    const e = easeOutExpo(Math.min(1, (t - start.current) / 1.8));
     const look = lookTarget(t, state, profile.touch, scroll);
-    const targetY = look.x * 0.28;
-    const targetX = -look.y * 0.14 + Math.sin(t * 0.35) * 0.04 - look.scroll * 0.55;
-    g.rotation.y = THREE.MathUtils.damp(g.rotation.y, targetY, 2.2, delta);
+    const targetY = look.x * 0.32 - (1 - e) * 1.35;
+    const targetX = -look.y * 0.18 + Math.sin(t * 0.35) * 0.04 - look.scroll * 0.6;
+    g.rotation.y = e < 1 ? targetY : THREE.MathUtils.damp(g.rotation.y, targetY, 2.2, delta);
     g.rotation.x = THREE.MathUtils.damp(g.rotation.x, targetX, 2.2, delta);
-    g.position.y = Math.sin(t * 0.7) * 0.06;
+    g.position.y = lift + Math.sin(t * 0.7) * 0.05;
+    g.scale.setScalar(scale * (0.82 + 0.18 * e));
   });
 
   return (
-    <group ref={group} scale={scale}>
-      {glyphs.map((glyph, i) => (
-        <Letter
+    <group ref={group} scale={scale} position={[0, lift, 0]}>
+      {parts.map((part, i) => (
+        <Piece
           key={i}
-          glyph={glyph}
-          index={i}
-          faceMaterial={faceMaterial}
-          sideMaterial={sideMaterial}
+          part={part}
           animate={animate}
+          material={
+            part.material === "base"
+              ? [materials.creamEnamel, materials.bronze]
+              : part.material === "cream"
+                ? materials.creamEnamel
+                : materials.oliveEnamel
+          }
         />
       ))}
     </group>
@@ -256,14 +294,14 @@ function Wordmark({
 function Halo({ accent, animate, lite }: { accent: string; animate: boolean; lite: boolean }) {
   const a = useRef<THREE.Mesh>(null);
   const b = useRef<THREE.Mesh>(null);
-  const viewport = useThree((state) => state.viewport);
-  // Anneaux qui encadrent le logo (au-dessus et au-dessous) sans le traverser
-  const wide = viewport.aspect >= 1;
-  const radius = Math.min(viewport.width * (wide ? 0.4 : 0.5), 5.4);
-  // Sur grand écran : plus inclinés et un peu abaissés, l'arc supérieur reste sous la navigation
+  const { diameter, lift, wide } = useBadgeLayout();
+  // Orbites derrière le badge, jamais devant : reculées d'un rayon, et agrandies d'autant pour
+  // dépasser de part et d'autre (demi-grand axe apparent : 1,55 rayon du badge)
+  const apparent = diameter * 0.78;
+  const radius = (apparent * (CAMERA_Z + 0.2)) / (CAMERA_Z - apparent);
+  const back = radius + 0.2;
   const tiltA = wide ? 1.3 : 1.18;
   const tiltB = wide ? 1.38 : 1.3;
-  const offsetY = wide ? -radius * 0.05 : 0;
   // Fils très fins : peu de facettes suffisent sur mobile
   const segments = lite ? 150 : 260;
   useSceneFrame((t) => {
@@ -272,7 +310,7 @@ function Halo({ accent, animate, lite }: { accent: string; animate: boolean; lit
     if (b.current) b.current.rotation.set(tiltB + Math.cos(t * 0.18) * 0.04, -0.12 + Math.sin(t * 0.13) * 0.05, -t * 0.04);
   });
   return (
-    <group position={[0, offsetY, -1.2]}>
+    <group position={[0, lift, -back]}>
       <mesh ref={a} rotation={[tiltA, 0, 0]}>
         <torusGeometry args={[radius, 0.009, lite ? 6 : 16, segments]} />
         <meshStandardMaterial color={accent} metalness={1} roughness={0.3} emissive={accent} emissiveIntensity={0.22} />
@@ -303,8 +341,8 @@ function useLogoTexture(url: string | null): LogoTexture {
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
       const bg = ctx.createRadialGradient(size / 2, size / 2, size * 0.1, size / 2, size / 2, size / 2);
-      bg.addColorStop(0, "#1a160f");
-      bg.addColorStop(1, "#0a0907");
+      bg.addColorStop(0, "#182010");
+      bg.addColorStop(1, "#0a0d06");
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, size, size);
       const w0 = img.naturalWidth || 512;
@@ -607,7 +645,7 @@ const DUST_FRAGMENT = /* glsl */ `
   }
 `;
 
-/** Poussière d'or : particules scintillantes (un seul appel de rendu, shader minimal). */
+/** Poussière lumineuse : particules scintillantes (un seul appel de rendu, shader minimal). */
 function GoldDust({ color, count = 70 }: { color: string; count?: number }) {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const uniforms = useMemo(() => ({ uTime: { value: 0 }, uColor: { value: new THREE.Color(color) }, uPixelRatio: { value: 1 } }), [color]);
@@ -700,21 +738,23 @@ export default function HeroScene({
   const logo = useLogoTexture(logoUrl ?? null);
   // Le médaillon attend son image ; si elle ne se charge pas, on revient au logotype
   const showMedallion = !!logoUrl && !logo.failed;
-  const letters = useGlyphs(profile.lite, !showMedallion);
+  const badge = useBadgeParts(profile.lite, !showMedallion);
   const animate = !reduceMotion;
   const running = ready && play && active;
+  // Anneaux et poussière : l'accent éclairci vers le crème du logo, pour rester visibles sur l'olive profond
+  const glow = useMemo(() => `#${new THREE.Color(accent).lerp(new THREE.Color("#f5f3e3"), 0.45).getHexString()}`, [accent]);
 
   let content: ReactNode = null;
   if (showMedallion && logo.texture) {
     content = <Medallion texture={logo.texture} accent={accent} animate={animate} profile={profile} scroll={scroll} />;
-  } else if (!showMedallion && letters) {
-    content = <Wordmark letters={letters} accent={accent} animate={animate} profile={profile} scroll={scroll} />;
+  } else if (!showMedallion && badge) {
+    content = <BadgeModel parts={badge} animate={animate} profile={profile} scroll={scroll} />;
   }
 
   return (
     <Canvas
-      camera={{ position: [0, 0, 11], fov: 32 }}
-      dpr={profile.lite ? [1, 1.5] : [1, 1.75]}
+      camera={{ position: [0, 0, CAMERA_Z], fov: 32 }}
+      dpr={profile.lite ? [1, 1.35] : [1, 1.75]}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       frameloop={!running ? "never" : animate ? "always" : "demand"}
       // Pas de mesure au défilement : elle re-rendait la scène toutes les 50 ms pendant le scroll
@@ -725,9 +765,9 @@ export default function HeroScene({
       <MovingLight animate={animate} />
       <directionalLight position={[-6, -2, 4]} intensity={0.6} color="#ffd9a0" />
       {content}
-      <Halo accent={accent} animate={animate} lite={profile.lite} />
+      <Halo accent={glow} animate={animate} lite={profile.lite} />
       <EnvironmentSweep animate={animate} />
-      {animate && <GoldDust color={accent} count={profile.lite ? 40 : 70} />}
+      {animate && <GoldDust color={glow} count={profile.lite ? 40 : 70} />}
       <StudioEnvironment size={profile.lite ? 128 : 256}>
         {content !== null && (
           <Precompile

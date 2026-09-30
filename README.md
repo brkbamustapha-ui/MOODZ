@@ -14,9 +14,11 @@ et calculer les revenus.
 
 ### Côté clients
 
-- **Intro et logo 3D** : le logotype MOODZ se dessine puis se dore ; sur la page d'accueil il devient
-  un objet 3D en or (reflets, particules). Sans WebGL, un logo doré en 2D prend le relais ; avec
-  l'option « réduire les animations » du téléphone, la scène reste immobile.
+- **Intro et logo 3D** : le badge MOODZ « Feed your mood » se compose (anneau, disque olive, branche,
+  lettres) ; sur la page d'accueil il devient une pièce émaillée en relief, bord bronze, qui émerge,
+  pivote et suit le doigt ou la souris. Sans WebGL, le badge en 2D prend le relais ; avec l'option
+  « réduire les animations » du téléphone, la scène reste immobile. Thème olive et crème, aux couleurs
+  du logo.
 - **Carte 3D fluide, sans photos** : catégories en carrousel 3D, articles présentés comme sur une carte
   de restaurant (nom, description, prix, options de taille), badges *Signature*, *Nouveau*,
   *Populaire*, *Épicé*, *Végétarien*. Les articles en rupture restent visibles mais ne peuvent pas être
@@ -158,8 +160,9 @@ Les variables `ADMIN_*` ne servent qu'à créer le premier compte. Pour le recr�
 
    Titres de catégorie : ligne commençant par `#`, en MAJUSCULES, ou finissant par `:`.
    Descriptions après `|`. Les prix peuvent s'écrire `1 400`, `1400 DA` ou `1400`.
-2. **Votre logo** : *Réglages > Apparence* (PNG, SVG ou WebP transparent, 500 Ko maximum). Il remplace
-   le logotype dans la navigation et devient un médaillon 3D sur l'accueil.
+2. **Votre logo** : le badge MOODZ est intégré. Pour en utiliser un autre : *Réglages > Apparence*
+   (PNG, SVG ou WebP transparent, 500 Ko maximum) ; il remplace le badge dans la navigation et devient
+   un médaillon 3D sur l'accueil. La couleur d'accent (olive par défaut) se choisit au même endroit.
 3. **Contact et horaires** : téléphone, WhatsApp, lien Google Maps, horaires par jour.
 4. **Commandes** : frais de livraison, livraison offerte dès, minimum, délai habituel, modes acceptés,
    commandes hors horaires.
@@ -195,12 +198,12 @@ src/
   app/                  pages, routes API (api/…) et espace gérant (admin/…)
   components/site/      site public : hero 3D, carte, panier, suivi
   components/admin/     tableau de bord : commandes, carte, revenus, réglages
-  components/brand/     logo animé et logotype
+  components/brand/     badge MOODZ (statique, animé) et mot MOODZ
   lib/db/               connexion, migrations SQL, données d'exemple
   lib/server/           logique serveur : auth, commandes, carte, statistiques
   proxy.ts              protection des routes /admin (ex-middleware)
 scripts/
-  generate-logo.mjs     régénère les tracés du logotype (police Cinzel)
+  generate-badge.mjs    régénère les tracés du badge (police Roboto Slab)
   export-sql.ts         exporte les migrations vers supabase/migrations
 ```
 
@@ -210,6 +213,7 @@ scripts/
 | `npm run build` puis `npm start` | version de production |
 | `npm run lint` / `npx tsc --noEmit` | vérifications |
 | `npx tsx scripts/export-sql.ts` | après une nouvelle migration dans `src/lib/db/migrations.ts` |
-| `node scripts/generate-logo.mjs` | après un changement de police ou de lettrage du logo |
+| `node scripts/generate-badge.mjs` | après un changement du dessin ou du lettrage du badge |
 
-Le logotype est tracé à partir de la police Cinzel (SIL Open Font License 1.1).
+Le badge est redessiné en vectoriel d'après le logo de la carte ; ses lettres sont tracées à partir de
+la police Roboto Slab Black (SIL Open Font License 1.1).

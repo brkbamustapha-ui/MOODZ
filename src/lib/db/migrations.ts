@@ -126,6 +126,15 @@ update menu_items set variants = (variants #>> '{}')::jsonb where jsonb_typeof(v
 update menu_items set tags = (tags #>> '{}')::jsonb where jsonb_typeof(tags) = 'string';
 `,
   },
+  {
+    // Le thème suit désormais le logo : l'or proposé par défaut devient l'olive du badge MOODZ.
+    // Un accent choisi par le gérant (autre que cet or) est conservé.
+    id: "003_accent_olive",
+    sql: `
+update settings set data = jsonb_set(data, '{theme,accent}', '"#738C1F"'::jsonb)
+where jsonb_typeof(data) = 'object' and upper(data #>> '{theme,accent}') = '#D8B46A';
+`,
+  },
 ];
 
 export async function runMigrations(db: Database) {

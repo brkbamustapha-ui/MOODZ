@@ -1,13 +1,13 @@
 "use client";
 
-import { LogoMark } from "@/components/brand/LogoMark";
+import { Badge } from "@/components/brand/Badge";
 import { DEFAULT_SETTINGS } from "@/lib/site-config";
 
 /** Erreur imprévue (base de données indisponible...) : page de marque plutôt qu'un écran vide. */
 export default function ErrorPage({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-6 text-center">
-      <LogoMark className="w-[min(72vw,380px)]" />
+      <Badge className="w-[min(52vw,220px)]" />
       <h1 className="mt-12 font-display text-4xl text-text">Nous revenons dans un instant</h1>
       <p className="mt-3 max-w-[42ch] text-[15px] text-text-3">
         Le site est momentanément indisponible. Réessayez dans quelques instants, ou retrouvez-nous sur

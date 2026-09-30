@@ -300,7 +300,7 @@ export function Modal({
           />
           <motion.div
             ref={panel}
-            className={`relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-[1.75rem] bg-[linear-gradient(180deg,var(--surface-2),var(--surface))] shadow-[inset_0_1px_0_rgb(255_240_210/0.08),0_40px_100px_-30px_rgb(0_0_0/0.9)] ring-1 ring-line sm:rounded-[1.75rem] ${
+            className={`relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-[1.75rem] bg-[linear-gradient(180deg,var(--surface-2),var(--surface))] shadow-[inset_0_1px_0_rgb(236_242_212/0.08),0_40px_100px_-30px_rgb(0_0_0/0.9)] ring-1 ring-line sm:rounded-[1.75rem] ${
               wide ? "sm:max-w-3xl" : "sm:max-w-lg"
             }`}
             initial={{ opacity: 0, y: 40, scale: 0.98 }}

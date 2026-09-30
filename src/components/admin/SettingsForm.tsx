@@ -4,19 +4,20 @@ import { FloppyDiskIcon, ImageIcon, TrashIcon, UploadSimpleIcon } from "@phospho
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
-import { LogoMark } from "@/components/brand/LogoMark";
+import { Badge } from "@/components/brand/Badge";
 import { api } from "@/lib/admin-api";
+import { accentTone } from "@/lib/color";
 import { DAY_KEYS, DAY_LABELS, type DayKey, type SiteSettings } from "@/lib/site-config";
 import { PageHeader } from "./AdminShell";
 import { Button, Panel, PanelTitle, Switch, TextArea, TextInput, inputClass, useToast } from "./ui";
 
 const ACCENTS = [
-  { name: "Or champagne", value: "#D8B46A" },
-  { name: "Or rose", value: "#D9A08B" },
-  { name: "Or pâle", value: "#E6D3A3" },
+  { name: "Olive MOODZ", value: "#738C1F" },
+  { name: "Olive clair", value: "#9DB04A" },
+  { name: "Sauge", value: "#A7B58A" },
+  { name: "Vert profond", value: "#4F6A2A" },
   { name: "Bronze", value: "#C08A4E" },
-  { name: "Ambre", value: "#E0A43C" },
-  { name: "Argent", value: "#C9CCD1" },
+  { name: "Or champagne", value: "#D8B46A" },
 ];
 
 const MAX_LOGO_BYTES = 500_000;
@@ -68,6 +69,7 @@ export function SettingsForm({ initial, username }: { initial: SiteSettings; use
       setSettings(res.settings);
       setSaved(res.settings);
       document.documentElement.style.setProperty("--accent", res.settings.theme.accent);
+      document.documentElement.dataset.accentTone = accentTone(res.settings.theme.accent);
       toast("Réglages enregistrés, le site est à jour");
       router.refresh();
     } catch (e) {
@@ -227,7 +229,7 @@ export function SettingsForm({ initial, username }: { initial: SiteSettings; use
         </Panel>
 
         <Panel>
-          <PanelTitle sub="La couleur d'accent s'applique au site, au logo 3D et au tableau de bord.">Apparence</PanelTitle>
+          <PanelTitle sub="La couleur d'accent s'applique aux boutons, titres et effets du site et du tableau de bord. Le logo garde ses couleurs.">Apparence</PanelTitle>
           <p className="mb-2 text-[12px] font-medium text-text-2">Couleur d&apos;accent</p>
           <div className="flex flex-wrap items-center gap-2">
             {ACCENTS.map((a) => (
@@ -249,8 +251,12 @@ export function SettingsForm({ initial, username }: { initial: SiteSettings; use
               Sur mesure
             </label>
           </div>
-          <div className="mt-5 rounded-2xl bg-bg p-6 ring-1 ring-line" style={{ ["--accent" as string]: settings.theme.accent }}>
-            <LogoMark className="mx-auto h-10 w-auto" />
+          <div
+            className="accent-scope mt-5 rounded-2xl bg-bg p-6 ring-1 ring-line"
+            style={{ ["--accent" as string]: settings.theme.accent }}
+            data-accent-tone={accentTone(settings.theme.accent)}
+          >
+            <Badge className="mx-auto h-20 w-20" compact />
             <div className="mt-5 flex justify-center gap-2">
               <span className="btn-gold inline-flex h-10 items-center rounded-full px-5 text-[13px] font-semibold">Commander</span>
               <span className="btn-ghost inline-flex h-10 items-center rounded-full px-5 text-[13px]">La carte</span>
@@ -268,7 +274,7 @@ export function SettingsForm({ initial, username }: { initial: SiteSettings; use
               )}
             </span>
             <div className="min-w-0 flex-1 text-[12px] text-text-3">
-              PNG, SVG ou WebP sur fond transparent, 500 Ko maximum. Il remplace le logotype dans la navigation et devient un médaillon 3D sur la page d&apos;accueil.
+              PNG, SVG ou WebP sur fond transparent, 500 Ko maximum. Il remplace le badge MOODZ dans la navigation et devient un médaillon 3D sur la page d&apos;accueil.
             </div>
             <div className="flex flex-col gap-2">
               <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={(e) => onLogo(e.target.files?.[0])} />

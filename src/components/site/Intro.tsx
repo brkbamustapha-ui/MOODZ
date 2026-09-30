@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useSyncExternalStore } from "react";
-import { AnimatedLogo } from "@/components/brand/AnimatedLogo";
+import { AnimatedBadge } from "@/components/brand/AnimatedBadge";
 import { INTRO_SESSION_KEY, introStore } from "./intro-store";
 
 /** Script exécuté avant l'affichage : masque l'intro si elle a déjà été vue (évite tout flash). */
@@ -90,8 +90,8 @@ export function Intro({ tagline, logoUrl }: { tagline: string; logoUrl?: string 
           {logoUrl ? (
             <UploadedLogoReveal url={logoUrl} tagline={tagline} />
           ) : (
-            <AnimatedLogo
-              className="w-[min(72vw,560px)] text-[clamp(11px,1.6vw,15px)]"
+            <AnimatedBadge
+              className="w-[min(62vw,340px)] text-[clamp(11px,1.6vw,15px)]"
               tagline={tagline}
               delay={0.15}
               onDone={() => window.setTimeout(introStore.finish, 250)}

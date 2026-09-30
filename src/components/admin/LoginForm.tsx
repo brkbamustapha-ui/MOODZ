@@ -3,7 +3,7 @@
 import { EyeIcon, EyeSlashIcon, LockKeyIcon, UserIcon } from "@phosphor-icons/react";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { AnimatedLogo } from "@/components/brand/AnimatedLogo";
+import { AnimatedBadge } from "@/components/brand/AnimatedBadge";
 import { LiquidGold } from "@/components/site/LiquidGold";
 import { api } from "@/lib/admin-api";
 
@@ -40,9 +40,9 @@ export function LoginForm({ next, isDev }: { next: string; isDev: boolean }) {
   return (
     <main className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-12">
       <div className="absolute inset-0 opacity-45 blur-[2px]">
-        <LiquidGold hue={40} />
+        <LiquidGold />
       </div>
-      <div aria-hidden className="absolute inset-0 bg-[radial-gradient(80%_70%_at_50%_50%,rgb(11_10_9/0.55),var(--bg)_85%)]" />
+      <div aria-hidden className="absolute inset-0 bg-[radial-gradient(80%_70%_at_50%_50%,rgb(12_16_7/0.55),var(--bg)_85%)]" />
 
       <motion.div
         className="relative w-full max-w-[420px]"
@@ -52,7 +52,7 @@ export function LoginForm({ next, isDev }: { next: string; isDev: boolean }) {
       >
         <div className="bezel">
           <div className="bezel-core px-7 pb-8 pt-10 sm:px-9">
-            <AnimatedLogo className="mx-auto w-[210px] text-[10px]" tagline="Espace gérant" />
+            <AnimatedBadge className="mx-auto w-[150px] text-[10px]" tagline="Espace gérant" />
             <form onSubmit={submit} className="mt-10 flex flex-col gap-4" noValidate>
               <div className="relative">
                 <label htmlFor="username" className="sr-only">

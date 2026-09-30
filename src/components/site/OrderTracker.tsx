@@ -102,7 +102,7 @@ export function OrderTracker({ initial, settings }: { initial: PublicOrder; sett
           <ArrowLeftIcon size={16} weight="light" /> La carte
         </Link>
         <Link href="/" aria-label="Accueil MOODZ">
-          <BrandLogo src={settings.logoDataUrl} alt={settings.restaurantName} className="h-5 w-auto" imageClassName="h-10 w-auto object-contain" />
+          <BrandLogo src={settings.logoDataUrl} alt={settings.restaurantName} className="h-14 w-14" imageClassName="h-10 w-auto object-contain" />
         </Link>
       </div>
 

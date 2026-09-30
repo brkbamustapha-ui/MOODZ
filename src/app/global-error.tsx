@@ -1,5 +1,7 @@
 "use client";
 
+import { Badge } from "@/components/brand/Badge";
+
 /** Erreur dans la mise en page racine : document autonome, sans les styles ni les polices du site. */
 export default function GlobalError({ retry }: { error: Error & { digest?: string }; retry: () => void }) {
   return (
@@ -12,17 +14,22 @@ export default function GlobalError({ retry }: { error: Error & { digest?: strin
           alignItems: "center",
           justifyContent: "center",
           padding: "0 24px",
-          background: "#0b0a09",
-          color: "#ece4d6",
+          background: "#0c1007",
+          color: "#f3f2e4",
+          // Couleurs du badge (la feuille de styles du site n'est pas chargée ici)
+          ["--logo-olive" as string]: "#738c1f",
+          ["--logo-cream" as string]: "#f5f3e3",
           textAlign: "center",
           fontFamily: "Georgia, 'Times New Roman', serif",
         }}
       >
         <title>MOODZ</title>
         <main>
-          <p style={{ margin: 0, fontSize: 30, letterSpacing: "0.32em", color: "#d8b46a" }}>MOODZ</p>
+          <div style={{ width: 160, margin: "0 auto" }}>
+            <Badge />
+          </div>
           <h1 style={{ margin: "36px 0 12px", fontSize: 32, fontWeight: 400 }}>Nous revenons dans un instant</h1>
-          <p style={{ margin: 0, fontFamily: "system-ui, sans-serif", fontSize: 15, color: "#a39a8a" }}>
+          <p style={{ margin: 0, fontFamily: "system-ui, sans-serif", fontSize: 15, color: "#979c80" }}>
             Le site est momentanément indisponible.
           </p>
           <button
@@ -34,8 +41,8 @@ export default function GlobalError({ retry }: { error: Error & { digest?: strin
               padding: "0 30px",
               border: 0,
               borderRadius: 999,
-              background: "linear-gradient(180deg, #f1dca5, #c79f57)",
-              color: "#1a140b",
+              background: "linear-gradient(180deg, #7f9a24, #5c7118)",
+              color: "#f6f5e8",
               fontFamily: "system-ui, sans-serif",
               fontSize: 15,
               fontWeight: 600,

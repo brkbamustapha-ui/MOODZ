@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Geist, Geist_Mono } from "next/font/google";
+import { accentTone } from "@/lib/color";
 import { getSettings } from "@/lib/server/settings";
+import { DEFAULT_SETTINGS } from "@/lib/site-config";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
@@ -36,7 +38,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b0a09",
+  themeColor: "#0c1007",
   colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
@@ -47,13 +49,14 @@ export const dynamic = "force-dynamic";
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const settings = await getSettings().catch(() => null);
-  const accent = settings?.theme.accent ?? "#d8b46a";
+  const accent = settings?.theme.accent ?? DEFAULT_SETTINGS.theme.accent;
 
   return (
     <html
       lang="fr"
       className={`${geist.variable} ${geistMono.variable} ${cormorant.variable} antialiased`}
       style={{ ["--accent" as string]: accent }}
+      data-accent-tone={accentTone(accent)}
       suppressHydrationWarning
     >
       <body className="grain min-h-dvh overflow-x-clip">{children}</body>

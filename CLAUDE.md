@@ -52,10 +52,14 @@ Textes de l'interface et commentaires du code en français.
 - La scène 3D (`hero/HeroScene.tsx`) est chargée à la demande (`ssr: false`) : ne pas y ajouter de
   dépendance lourde (drei a été retiré pour cette raison).
 - Fluidité sur téléphone (mesurer avec Playwright, CPU ralenti ×4 par CDP) : la scène 3D compile ses
-  shaders avec `compileAsync` et prépare lettres et reflets hors du rendu ; profil allégé au doigt
+  shaders avec `compileAsync` et prépare badge et reflets hors du rendu ; profil allégé au doigt
   (matériaux standard, moins de pixels). Animations dans `useSceneFrame` (l'horloge de R3F repart de
   zéro quand le rendu reprend). Au doigt : pas de `backdrop-filter` (règle `.glass` dans
   `globals.css`), pas de filtre CSS animé, pas d'or liquide WebGL (`LiquidGold` passe en CSS).
-- Couleur d'accent : `--accent` vient des réglages ; les nuances or sont dérivées par `color-mix`
-  dans `src/app/globals.css` (Tailwind v4, configuration en CSS).
-- Le logotype vient de `src/lib/brand/logo-glyphs.ts`, généré par `scripts/generate-logo.mjs`.
+- Couleur d'accent : `--accent` vient des réglages (olive du logo par défaut) ; les nuances
+  `--gold-*` (nom historique) en sont dérivées par `color-mix` dans `src/app/globals.css` (Tailwind v4,
+  configuration en CSS). `<html data-accent-tone>` (`src/lib/color.ts`) choisit texte crème ou foncé
+  sur les boutons ; `.accent-scope` recalcule les nuances sous un `--accent` local (aperçu).
+- Logo : badge « Feed your mood » dans `src/lib/brand/badge.ts`, généré par
+  `scripts/generate-badge.mjs` (Roboto Slab Black) ; composants `Badge`, `Wordmark`, `AnimatedBadge`.
+  Ses couleurs sont fixes (`--logo-olive`, `--logo-cream`), indépendantes de l'accent.
